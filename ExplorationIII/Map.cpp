@@ -24,10 +24,15 @@ void Map::Update(){
 };
 void Map::Render(){
 	terrain->Render();
-	Model::shader->Use();
-	Model::shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", glm::mat4(1.0f));
-	Tile::Render();
+	if (debug){
+		Model::shader->Use();
+		Model::shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", glm::mat4(1.0f));
+		Tile::Render();
+	}
 };
+void Map::SwapDebug(){
+	debug = !debug;
+}
 void Map::SetTileSize(glm::vec2 size){
 	tileSize = size;
 };

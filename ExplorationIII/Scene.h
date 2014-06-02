@@ -26,7 +26,9 @@ public:
 	btAlignedObjectArray<btCollisionShape*> shapes;
 	btDiscreteDynamicsWorld*			 dynamicsWorld;
 	Map* getMap();
+	void SwapDebug();
 private:
+	bool debug;
 	void UpdateObjects();
 	void RenderObjects();
 	std::vector<GameObject*> objects;

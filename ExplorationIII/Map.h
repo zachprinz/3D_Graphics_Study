@@ -15,7 +15,9 @@ public:
 	void Render();
 	void SetTileSize(glm::vec2);
 	Terrain* getTerrain();
+	void SwapDebug();
 private:
+	bool debug;
 	glm::vec2 mapSize;
 	glm::vec2 tileSize;
 	glm::vec3 terrainSize;

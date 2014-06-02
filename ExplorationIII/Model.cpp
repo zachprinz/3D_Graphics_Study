@@ -75,7 +75,6 @@ bool Model::Load(char* filePath){
 					myVBO.data[myVBO.count++] = (mesh->mTextureCoords[0][face.mIndices[z]].y);
 				}
 				else{
-					//std::cout << "Failed to find tex coords" << std::endl;
 					myVBO.data[myVBO.count++] = (0.0f);
 					myVBO.data[myVBO.count++] = (0.0f);
 				}
@@ -85,7 +84,6 @@ bool Model::Load(char* filePath){
 					myVBO.data[myVBO.count++] = (normal->z);
 				}
 				else{
-					//std::cout << "Failed to find normal coords" << std::endl;
 					myVBO.data[myVBO.count++] = (0.0f);
 					myVBO.data[myVBO.count++] = (0.0f);
 					myVBO.data[myVBO.count++] = (0.0f);

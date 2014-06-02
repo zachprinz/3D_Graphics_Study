@@ -7,7 +7,6 @@ Scene* Scene::Instance = NULL;
 #define COL_NOTHING 0
 #define COL_OBJECT BIT(0)
 #define COL_WALL BIT(1)
-#define debug true
 
 #define OBJECT_COLLISION_MASK COL_WALL
 #define WALL_COLLISION_MASK COL_NOTHING
@@ -31,8 +30,7 @@ Scene::Scene(char* terrainPath, char* skyboxPath, glm::vec3 terrainSize){
 	solver = new btSequentialImpulseConstraintSolver;
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase , solver, collisionConfiguration);//m_overlappingPairCache
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
-	if (debug)
-		debugDrawer.setDebugMode(1);
+	debugDrawer.setDebugMode(0);
 	dynamicsWorld->setDebugDrawer(&debugDrawer);
 	dynamicsWorld->addRigidBody(map->getTerrain()->GetBody());
 	shapes.push_back(map->getTerrain()->GetBody()->getCollisionShape());
@@ -75,4 +73,11 @@ void Scene::AddObject(GameObject* object){
 };
 Map* Scene::getMap(){
 	return map;
+}
+void Scene::SwapDebug(){
+	debug = !debug;
+	if (debug)
+		debugDrawer.setDebugMode(1);
+	else
+		debugDrawer.setDebugMode(0);
 }

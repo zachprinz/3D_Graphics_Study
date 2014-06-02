@@ -14,7 +14,7 @@
 
 class GameObject{
 public:
-	GameObject(char* meshName, glm::vec3 position = glm::vec3(0, 0, 0));
+	GameObject(char* meshName, glm::vec2 position = glm::vec2(0, 0), bool isStatic = false);
 	void Update();
 	void Render();
 	void SetPosition(glm::vec3);

@@ -7,19 +7,24 @@
 
 int GameObject::count;
 
-GameObject::GameObject(char* meshName, glm::vec3 position){
+GameObject::GameObject(char* meshName, glm::vec2 position, bool isStatic){
 	ID = count++;
 	model.Load(meshName);
-	this->position = position;
+	
+	this->position = Scene::Instance->getMap()->getTilePosition(position);
 	rotation = glm::vec3(0.0, 0.0, 0.0);
 	scale = glm::vec3(1.0, 1.0, 1.0);
 	//Physics
 	collisionShape = new btBoxShape(btVector3(1.0, 1.0, 1.0));
-	btVector3 bodyPosition(position.x, position.y +20, position.z);
+	float fall = 20.f;
+	if (isStatic) fall = 10.f;
+	btVector3 bodyPosition(this->position.x, this->position.y + fall, this->position.z);
 	btQuaternion orientation(1.0, 0.0, 0.0, 0.0);
 	btTransform transform(orientation, bodyPosition);
 	btDefaultMotionState* motionstate = new btDefaultMotionState(transform);
-	btRigidBody::btRigidBodyConstructionInfo bodyInfo(1, motionstate, collisionShape, btVector3(0, 0, 0));
+	btScalar mass = 1.0f;
+	if (isStatic) mass = 0.f;
+	btRigidBody::btRigidBodyConstructionInfo bodyInfo(mass, motionstate, collisionShape, btVector3(0, 0, 0));
 	body = new btRigidBody(bodyInfo);
 	Scene::Instance->AddObject(this);
 };

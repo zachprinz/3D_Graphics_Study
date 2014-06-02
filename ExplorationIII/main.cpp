@@ -73,6 +73,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_E:
 			eIsDown = true;
 			break;
+		case GLFW_KEY_F1:
+			Scene::Instance->getMap()->SwapDebug();
+			break;
+		case GLFW_KEY_F2:
+			Scene::Instance->SwapDebug();
+			break;
 		}
 	}
 	if (action == GLFW_RELEASE){
@@ -146,7 +152,7 @@ void CheckInput(){
 
 int main(void){
 	init();
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 
 	GUI gui;
 
@@ -160,8 +166,10 @@ int main(void){
 
 	Scene scene("data\\maps\\heightmap.bmp", "data/skybox/2/", glm::vec3(200.0f, 17.5f, 200.0f));
 
-	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", scene.getMap()->getTilePosition(glm::vec2(45, 45)));
-	GameObject wolf("data\\models\\Wolf\\Wolf.obj", scene.getMap()->getTilePosition(glm::vec2(50,50)));
+	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(45, 45), true);
+	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
+
+	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(50,50));
 
 	previousTime = glfwGetTime();
 
