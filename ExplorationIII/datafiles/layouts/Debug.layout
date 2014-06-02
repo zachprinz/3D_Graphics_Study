@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<GUILayout version="4">
+    <Window type="DefaultWindow" name="root">
+	
+        <Window type="TaharezLook/FrameWindow" name="testWindow">
+            <Property name="Position" value="{ {0.01, 0}, {0.01, 0} }" />
+            <Property name="UnifiedSize" value="{ {0.25, 0}, {0.25, 0} }" />
+            <Property name="Text" value="Debug" />
+			
+			<Window name="Listbox" type="TaharezLook/Listbox">
+                <Property name="Position" value="{{0.05,0},{0.05,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Size" value="{{0.9,0},{0.9,0}}" />
+                <Property name="TooltipText" value="Listbox containing the items you have added." />
+				
+				<Window name="frameTimeLabel" type="TaharezLook/StaticText">
+					<Property name="Position" value="{{0.05,0},{0.1,0}}" />
+					<Property name="MaxSize" value="{{1,0},{1,0}}" />
+					<Property name="Size" value="{{0.9,0},{0.25,0}}" />
+					<Property name="HorzFormatting" value="WordWrapCentreAligned" />
+					<Property name="Text" value="Frame Time: XX.XX ms" />
+					<Property name="TooltipText" value="Information panel." />
+				</Window>
+				<Window name="FPSLabel" type="TaharezLook/StaticText">
+					<Property name="Position" value="{{0.05,0},{0.4,0}}" />
+					<Property name="MaxSize" value="{{1,0},{1,0}}" />
+					<Property name="Size" value="{{0.9,0},{0.25,0}}" />
+					<Property name="HorzFormatting" value="WordWrapCentreAligned" />
+					<Property name="Text" value="FPS: XXXX" />
+					<Property name="TooltipText" value="Information panel." />
+				</Window>
+				<Window name="FXAALabel" type="TaharezLook/StaticText">
+					<Property name="Position" value="{{0.05,0},{0.7,0}}" />
+					<Property name="MaxSize" value="{{1,0},{1,0}}" />
+					<Property name="Size" value="{{0.9,0},{0.25,0}}" />
+					<Property name="HorzFormatting" value="WordWrapCentreAligned" />
+					<Property name="Text" value="FXAA: X" />
+					<Property name="TooltipText" value="Information panel." />
+				</Window>
+		   </Window>
+        </Window>
+    </Window>
+</GUILayout>

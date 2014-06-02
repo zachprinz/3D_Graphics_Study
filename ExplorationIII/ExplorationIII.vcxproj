@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EEB73712-73A1-4019-B3C5-F6B2004BA95F}</ProjectGuid>
+    <RootNamespace>ExplorationIII</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLM\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Bullet\include\src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <CompileAsManaged>
+      </CompileAsManaged>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glew32sd.lib;opengl32.lib;glfw3dll.lib;FreeImaged.lib;assimpD.lib;CEGUIBase-0_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIOpenGLRenderer-0_d.lib;BulletSoftBody_Debug.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;OpenGLSupport_Debug.lib;Bullet3Common_Debug.lib;Bullet3Collision_Debug.lib;Bullet3Dynamics_Debug.lib;Bullet3Geometry_Debug.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\lib\Debug;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\lib\Debug;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\lib\Debug\Win32;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\lib\;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\lib\Debug;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\dependencies\lib\dynamic\debug;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Bullet\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLM\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;FreeImage.lib;assimp.lib;CEGUI.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\lib\Release\Win32;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\lib\Release</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="GLDebugDrawer.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Map.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="VBO.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GLDebugDrawer.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GUI.h" />
+    <ClInclude Include="Map.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="Terrain.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Tile.h" />
+    <ClInclude Include="VBO.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
