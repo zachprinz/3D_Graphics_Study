@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
+#include "Shader.h"
 
 class Tile{
 public:
@@ -16,6 +17,7 @@ public:
 	static int* indices;
 	static int indicesCount;
 	static bool debug;
+	static Shader* shader;
 private:
 	static int count;
 	static GLuint vbo;

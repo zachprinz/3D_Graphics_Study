@@ -2,15 +2,15 @@
 #include "Model.h"
 
 GLuint elements[] = { 0, 1, 2, 2, 3, 0 };
-
- GLuint Tile::vbo;
- GLuint Tile::vao;
- GLuint Tile::ebo;
- int Tile::indicesCount;
- int* Tile::indices;
- int Tile::count;
- float* Tile::vertFloats;
- bool Tile::debug;
+Shader* Tile::shader;
+GLuint Tile::vbo;
+GLuint Tile::vao;
+GLuint Tile::ebo;
+int Tile::indicesCount;
+int* Tile::indices;
+int Tile::count;
+float* Tile::vertFloats;
+bool Tile::debug;
 
  void Tile::Initialize(glm::vec2 size){
 	 debug = true;
@@ -110,9 +110,9 @@ glm::vec3 Tile::getPosition(){
 }
 void Tile::Render(){
 	if (debug == true){
-		Model::shader->Use();
-		Model::shader->SetUniform("overrideColor", glm::vec4(1.0, 0.0, 0.0, 1.0));
-		Model::shader->SetUniform("doOverride", 1);
+		shader->Use();
+		shader->SetUniform("overrideColor", glm::vec4(1.0, 0.0, 0.0, 1.0));
+		shader->SetUniform("doOverride", 1);
 		glDisable(GL_CULL_FACE);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -120,7 +120,7 @@ void Tile::Render(){
 		glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		glEnable(GL_CULL_FACE);
-		Model::shader->SetUniform("overrideColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
-		Model::shader->SetUniform("doOverride", 0);
+		shader->SetUniform("overrideColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+		shader->SetUniform("doOverride", 0);
 	}
 }

@@ -156,18 +156,24 @@ int main(void){
 
 	GUI gui;
 
-	Shader mainShader = Shader("main_shader.vert", "main_shader.frag");
-	Shader terrainShader = Shader("terrain.vert", "terrain.frag");
-	Model::shader = &mainShader;
-	Skybox::shader = &mainShader;
+	Shader modelShader = Shader("shaders/model.vert", "shaders/model.frag");
+	Shader terrainShader = Shader("shaders/terrain.vert", "shaders/terrain.frag");
+	Shader tileShader = Shader("shaders/tile.vert", "shaders/tile.frag");
+	Shader skyboxShader = Shader("shaders/skybox.vert", "shaders/skybox.frag");
+	Model::shader = &modelShader;
+	Skybox::shader = &skyboxShader;
 	Terrain::shader = &terrainShader;
-	camera.shaders.push_back(&mainShader);
+	camera.shaders.push_back(&modelShader);
 	camera.shaders.push_back(&terrainShader);
+	camera.shaders.push_back(&tileShader);
+	camera.shaders.push_back(&skyboxShader);
 
 	Scene scene("data\\maps\\heightmap.bmp", "data/skybox/2/", glm::vec3(200.0f, 17.5f, 200.0f));
 
 	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(45, 45), true);
 	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
+	GameObject user("data\\models\\User\\User.dae", glm::vec2(50, 50));
+	user.SetScale(glm::vec3(0.1, 0.1, 0.1));
 
 	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(50,50));
 
