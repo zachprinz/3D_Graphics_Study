@@ -172,8 +172,10 @@ int main(void){
 
 	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(45, 45), true);
 	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
-	GameObject user("data\\models\\User\\User.x", glm::vec2(50, 50));
-	//user.SetScale(glm::vec3(0.1, 0.1, 0.1));
+	GameObject user("data\\models\\Gaurd\\boblampclean.md5mesh", glm::vec2(50, 50)); // Human\\human.x also works
+	//Ga/meObject user("data\\models\\Human\\human.x", glm::vec2(50, 50)); // Human\\human.x also works
+
+	user.Rotate(glm::vec3(0.0, 0.0, 180.0));
 
 	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(50,50));
 

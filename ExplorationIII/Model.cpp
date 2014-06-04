@@ -10,7 +10,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string>
-#include <iomanip>      // std::setprecision
+#include <iomanip>
 
 
 std::vector<Texture> Model::textures;
@@ -39,8 +39,8 @@ Model::Model(){
 	isLoaded = false;
 };
 bool Model::Load(char* filePath){
-	scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | AI_SCENE_FLAGS_INCOMPLETE);// aiProcess_FlipUV's
-	//scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+	//scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | AI_SCENE_FLAGS_INCOMPLETE);// aiProcess_FlipUV's
+	scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 	int vertexCount = 0;
 	for (int x = 0; x < scene->mNumMeshes; x++){
 		vertexCount += 3*scene->mMeshes[x]->mNumFaces;
@@ -50,13 +50,13 @@ bool Model::Load(char* filePath){
 		int sizeBefore = tempTotal;
 		meshStartIndices.push_back(sizeBefore);
 		for (int y = 0; y < scene->mMeshes[x]->mNumFaces; y++){
-			for (int z = 0; z < 3; z++){
+			for (int z = 0; z < 3; z++){ //What if your adding a verticy multiple times...
 				tempTotal++;
 			}
 		}
 		meshSizes.push_back((tempTotal - sizeBefore));
 	}
-	myVBO.Create((tempTotal * (8 + NUM_BONES_PER_VEREX) * sizeof(float)) + (tempTotal * NUM_BONES_PER_VEREX * sizeof(int)));
+	myVBO.Create((tempTotal * (8 + (2*NUM_BONES_PER_VEREX)) * sizeof(float)));
 	if (scene){
 		globalInverseTransform = scene->mRootNode->mTransformation;
 		globalInverseTransform.Inverse();
@@ -68,7 +68,7 @@ bool Model::Load(char* filePath){
 
 	vector<VertexBoneData> Bones;
 
-	Bones.resize(tempTotal + 1);
+	Bones.resize(tempTotal);
 	for (int x = 0; x < scene->mNumMeshes; x++){
 		LoadBones(x, scene->mMeshes[x], Bones);
 	}
@@ -78,6 +78,7 @@ bool Model::Load(char* filePath){
 		int faceCount = mesh->mNumFaces;
 		materialIndices.push_back(mesh->mMaterialIndex);
 		const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
+		int tempVertCount = 0;
 		for (int y = 0; y < faceCount; y++){
 			const aiFace& face = mesh->mFaces[y];
 			for (int z = 0; z < 3; z++){
@@ -87,8 +88,8 @@ bool Model::Load(char* filePath){
 				std::vector<int> boneIDs;
 				std::vector<float> myWeights;
 				for (int currentBoneID = 0; currentBoneID < NUM_BONES_PER_VEREX; currentBoneID++){
-					boneIDs.push_back(Bones.at(myVBO.debugCount).IDs[currentBoneID]);
-					myWeights.push_back(Bones.at(myVBO.debugCount).Weights[currentBoneID]);
+					boneIDs.push_back(Bones.at(meshStartIndices[x] + tempVertCount).IDs[currentBoneID]);
+					myWeights.push_back(Bones.at(meshStartIndices[x] + tempVertCount).Weights[currentBoneID]);
 				}
 				if (pos != NULL){
 					myVBO.data[myVBO.count++] = (pos->x);
@@ -125,6 +126,7 @@ bool Model::Load(char* filePath){
 					myVBO.data[myVBO.count++] = myWeights.at(myWeightData);
 				}
 				myVBO.debugCount++;
+				tempVertCount++;
 			}
 		}
 		int meshVertices = mesh->mNumVertices;
@@ -228,15 +230,13 @@ void Model::Update(glm::mat4 model){
 	shader->Use();
 	shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", model);
 	vector<Matrix4f> Transforms;
-	BoneTransform(elapsedTime, Transforms);
-	glm::mat4 tempMat4 = glm::mat4(1.0);
+	BoneTransform(elapsedTime, Transforms);//TODO
 	for (int x = 0; x < Transforms.size(); x++){
 		char tempName[128];
 		memset(tempName, 0, sizeof(tempName));
 		sprintf(tempName, "gBones[%d]", x);
 		GLuint tempPos = glGetUniformLocation(shader->ID, tempName);
-		CopyaiMat(&Transforms[x], tempMat4);
-		glUniformMatrix4fv(tempPos, 1, GL_TRUE, glm::value_ptr(tempMat4));
+		glUniformMatrix4fv(tempPos, 1, GL_TRUE, (float*)(Transforms[x][0]));
 	}
 }
 
@@ -358,7 +358,7 @@ void Model::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const 
 	assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
 	float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
 	float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-	assert(Factor >= 0.0f && Factor <= 1.0f);
+	assert(Factor >= 0.0f && Factor <= 1.0f); //Not working
 	const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
 	const aiVector3D& End = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
 	aiVector3D Delta = End - Start;

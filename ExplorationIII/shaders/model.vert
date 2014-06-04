@@ -20,7 +20,7 @@ uniform mat4 normalMatrix;
 uniform vec3 lightDirection;
 uniform int doOverride;
 uniform vec4 overrideColor;
-uniform mat4 gBones[200];
+uniform mat4 gBones[100];
 
 uniform float ambientIntensity;
 
@@ -36,10 +36,12 @@ void main()
 		vTexCoord = inCoord;
 		vDirection = lightDirection;
 
-		mat4 mMVP = projMatrix*viewMatrix*(BoneTransform * modelMatrix);
+		vec4 PosL = BoneTransform * vec4(inPosition, 1.0);
+		
+		mat4 mMVP = projMatrix*viewMatrix*(modelMatrix);
 
-		gl_Position = mMVP * vec4(inPosition,1);
-		vec4 vRes = BoneTransform * normalMatrix*vec4(inNormal, 0.0);
+		gl_Position = mMVP * PosL;
+		vec4 vRes = normalMatrix*vec4(inNormal, 0.0);
 		vNormal = vRes.xyz;
 		
 		overrideColor2 = overrideColor;
