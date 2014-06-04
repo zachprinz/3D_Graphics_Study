@@ -43,6 +43,7 @@ public:
 	static Shader* shader;
 	void BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms);
 	uint getBoneCount() const { return boneCount;  }
+	static float elapsedTime;
 private:
 	bool isLoaded;
 	VBO myVBO;
@@ -98,6 +99,7 @@ private:
 	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
 	bool InitFromScene(const aiScene* pScene, const string& Filename);
 	const aiVector3D* normal;
+	GLuint boneLocations;
 };
 
 #endif

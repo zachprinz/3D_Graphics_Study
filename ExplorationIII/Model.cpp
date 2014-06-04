@@ -16,6 +16,7 @@
 std::vector<Texture> Model::textures;
 Shader* Model::shader;
 float Model::neededSize = 0;
+float Model::elapsedTime = 0;
 
 std::string GetDirectoryPath(std::string sFilePath){
 	// Get directory path
@@ -39,7 +40,7 @@ Model::Model(){
 };
 bool Model::Load(char* filePath){
 	scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | AI_SCENE_FLAGS_INCOMPLETE);// aiProcess_FlipUV's
-	
+	//scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 	int vertexCount = 0;
 	for (int x = 0; x < scene->mNumMeshes; x++){
 		vertexCount += 3*scene->mMeshes[x]->mNumFaces;
@@ -213,9 +214,30 @@ void Model::Render(){
 	}
 	glBindVertexArray(0);
 };
+void CopyaiMat(const aiMatrix4x4 *from, glm::mat4 &to) {
+	to[0][0] = from->a1; to[1][0] = from->a2;
+	to[2][0] = from->a3; to[3][0] = from->a4;
+	to[0][1] = from->b1; to[1][1] = from->b2;
+	to[2][1] = from->b3; to[3][1] = from->b4;
+	to[0][2] = from->c1; to[1][2] = from->c2;
+	to[2][2] = from->c3; to[3][2] = from->c4;
+	to[0][3] = from->d1; to[1][3] = from->d2;
+	to[2][3] = from->d3; to[3][3] = from->d4;
+}
 void Model::Update(glm::mat4 model){
 	shader->Use();
 	shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", model);
+	vector<Matrix4f> Transforms;
+	BoneTransform(elapsedTime, Transforms);
+	glm::mat4 tempMat4 = glm::mat4(1.0);
+	for (int x = 0; x < Transforms.size(); x++){
+		char tempName[128];
+		memset(tempName, 0, sizeof(tempName));
+		sprintf(tempName, "gBones[%d]", x);
+		GLuint tempPos = glGetUniformLocation(shader->ID, tempName);
+		CopyaiMat(&Transforms[x], tempMat4);
+		glUniformMatrix4fv(tempPos, 1, GL_TRUE, glm::value_ptr(tempMat4));
+	}
 }
 
 void Model::LoadBones(uint MeshIndex, const aiMesh* pMesh, vector<VertexBoneData>& Bones){
@@ -387,19 +409,20 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Ma
 
 
 void Model::BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms){
-	Matrix4f Identity;
-	Identity.IsIdentity();
+	if (scene->HasAnimations()){ //None of them have animations...
+		Matrix4f Identity;
+		Identity.IsIdentity();
+		float TicksPerSecond = (float)(scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
+		float TimeInTicks = TimeInSeconds * TicksPerSecond;
+		float AnimationTime = fmod(TimeInTicks, (float)scene->mAnimations[0]->mDuration);
 
-	float TicksPerSecond = (float)(scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
-	float TimeInTicks = TimeInSeconds * TicksPerSecond;
-	float AnimationTime = fmod(TimeInTicks, (float)scene->mAnimations[0]->mDuration);
+		ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
 
-	ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
+		Transforms.resize(boneCount);
 
-	Transforms.resize(boneCount);
-
-	for (uint i = 0; i < boneCount; i++) {
-		Transforms[i] = boneInfo[i].FinalTransformation;
+		for (uint i = 0; i < boneCount; i++) {
+			Transforms[i] = boneInfo[i].FinalTransformation;
+		}
 	}
 }
 
