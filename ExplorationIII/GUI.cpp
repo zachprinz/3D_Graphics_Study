@@ -40,9 +40,6 @@ void GUI::Render(){
 	glBindSampler(0, 0);
 	CEGUI::System::getSingleton().renderAllGUIContexts();
 }
-
-
-
 void GUI::CalculateDebug(){
 	double currentTime = glfwGetTime();
 	nbFrames++;

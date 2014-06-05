@@ -25,6 +25,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <FI/FreeImage.h>
+#include <iostream>
+#include <fstream>
 
 #define uint GLuint
 #define Matrix4f aiMatrix4x4
@@ -54,6 +56,7 @@ private:
 	std::vector<int> meshSizes;
 	std::vector<int> materialIndices;
 	std::vector<bool> meshIsTextured;
+	std::vector<int> meshStartVerts;
 	int numberOfMaterials;
 
 	//Animation
@@ -62,8 +65,8 @@ private:
 		Matrix4f BoneOffset;
 		Matrix4f FinalTransformation;
 		BoneInfo() {
-			BoneOffset = aiMatrix4x4();
-			FinalTransformation = aiMatrix4x4();
+			memset(&BoneOffset, 0, sizeof(BoneOffset));
+			memset(&FinalTransformation, 0, sizeof(FinalTransformation));
 		}
 	};
 
@@ -100,6 +103,7 @@ private:
 	bool InitFromScene(const aiScene* pScene, const string& Filename);
 	const aiVector3D* normal;
 	GLuint boneLocations;
+	ofstream myfile2;
 };
 
 #endif

@@ -152,7 +152,7 @@ void CheckInput(){
 
 int main(void){
 	init();
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 
 	GUI gui;
 
@@ -173,9 +173,9 @@ int main(void){
 	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(45, 45), true);
 	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
 	GameObject user("data\\models\\Gaurd\\boblampclean.md5mesh", glm::vec2(50, 50)); // Human\\human.x also works
-	//Ga/meObject user("data\\models\\Human\\human.x", glm::vec2(50, 50)); // Human\\human.x also works
+	//GameObject user("data\\models\\Human\\human.x", glm::vec2(50, 50)); // Human\\human.x also works
 
-	user.Rotate(glm::vec3(0.0, 0.0, 180.0));
+	user.Rotate(glm::vec3(270.0, 0.0, 0.0));
 
 	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(50,50));
 

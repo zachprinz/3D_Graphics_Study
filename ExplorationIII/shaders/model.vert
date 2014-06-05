@@ -21,26 +21,26 @@ uniform vec3 lightDirection;
 uniform int doOverride;
 uniform vec4 overrideColor;
 uniform mat4 gBones[100];
-
 uniform float ambientIntensity;
 
 void main()
 {
 	if(Weights[0] != 0.0 || Weights[1] != 0.0 || Weights[2] != 0.0 || Weights[3] != 0.0){
 		mat4 BoneTransform = gBones[int(BoneIDs[0])] * Weights[0];
-		BoneTransform     += gBones[int(BoneIDs[1])] * Weights[1];
-		BoneTransform     += gBones[int(BoneIDs[2])] * Weights[2];
-		BoneTransform     += gBones[int(BoneIDs[3])] * Weights[3];
-		
+		BoneTransform += gBones[int(BoneIDs[1])] * Weights[1];
+		BoneTransform += gBones[int(BoneIDs[2])] * Weights[2];
+		BoneTransform += gBones[int(BoneIDs[3])] * Weights[3];
+
 		ambientIntensity2 = ambientIntensity;
 		vTexCoord = inCoord;
 		vDirection = lightDirection;
 
 		vec4 PosL = BoneTransform * vec4(inPosition, 1.0);
 		
-		mat4 mMVP = projMatrix*viewMatrix*(modelMatrix);
-
+		mat4 mMVP = projMatrix*viewMatrix*modelMatrix;
+		
 		gl_Position = mMVP * PosL;
+		
 		vec4 vRes = normalMatrix*vec4(inNormal, 0.0);
 		vNormal = vRes.xyz;
 		
