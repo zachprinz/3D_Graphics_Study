@@ -92,7 +92,7 @@ Shader::Shader(const char * vertex_file_path, const char * fragment_file_path){
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
-	glBindFragDataLocation(ProgramID, 1, "outputColor");
+	glBindFragDataLocation(ProgramID, 0, "outputColor");
 	glLinkProgram(ProgramID);
 	isLinked = true;
 	ID = ProgramID;

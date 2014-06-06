@@ -25,8 +25,8 @@ void Map::Update(){
 void Map::Render(){
 	terrain->Render();
 	if (debug){
-		Model::shader->Use();
-		Model::shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", glm::mat4(1.0f));
+		Tile::shader->Use();
+		Tile::shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", glm::mat4(1.0f));
 		Tile::Render();
 	}
 };

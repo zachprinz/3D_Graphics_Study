@@ -20,7 +20,7 @@ Camera::Camera(){
 	if (Instance == NULL)
 		Instance = this;
 	proj = glm::perspective(45.0f, 800.0f / 600.0f, 1.0f, 500.0f);
-	position = glm::vec3(5.0f,100.0f, 150.0f);
+	position = glm::vec3(0.0f,12.0f, 23.0f);
 	focus = glm::vec3(position.x, position.y + 2.0f, position.z - 1);// ::vec3(0.0f, 2.0f, 3.0f);
 	up = glm::vec3(0.f, 1.f, 0.f);
 	xAngle = 0.f;

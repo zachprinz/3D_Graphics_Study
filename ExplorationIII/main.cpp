@@ -163,6 +163,7 @@ int main(void){
 	Model::shader = &modelShader;
 	Skybox::shader = &skyboxShader;
 	Terrain::shader = &terrainShader;
+	Tile::shader = &tileShader;
 	camera.shaders.push_back(&modelShader);
 	camera.shaders.push_back(&terrainShader);
 	camera.shaders.push_back(&tileShader);
@@ -172,12 +173,14 @@ int main(void){
 
 	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(45, 45), true);
 	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
-	GameObject user("data\\models\\Gaurd\\boblampclean.md5mesh", glm::vec2(50, 50)); // Human\\human.x also works
-	//GameObject user("data\\models\\Human\\human.x", glm::vec2(50, 50)); // Human\\human.x also works
+	//GameObject user("data\\models\\Gaurd\\boblampclean.md5mesh", glm::vec2(50, 50)); // Human\\human.x also works
+	GameObject user("data\\models\\User\\User.x", glm::vec2(50, 50)); // Human\\human.x also works
 
-	user.Rotate(glm::vec3(270.0, 0.0, 0.0));
+	//user.Rotate(glm::vec3(270.0, 0.0, 0.0));
+	//user.SetScale(glm::vec3(0.05, 0.05, 0.05));
+	//user.Translate(glm::vec3(0.0, 5.0, 0.0));
 
-	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(50,50));
+	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(53,50));
 
 	previousTime = glfwGetTime();
 

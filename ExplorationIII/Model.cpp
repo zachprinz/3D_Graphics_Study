@@ -39,110 +39,122 @@ Model::Model(){
 	}
 	isLoaded = false;
 };
-bool Model::Load(char* filePath){
-	importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, NUM_BONES_PER_VEREX);
-	scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
-	int tempTotal = 0;
-	int tempIndicesTotal = 0;
-	int tempNumVertecies = 0;
-	for (int x = 0; x < scene->mNumMeshes; x++){
-		int sizeBefore = tempTotal;
-		meshStartIndices.push_back(sizeBefore);
-		meshStartVerts.push_back(tempNumVertecies);
-		tempNumVertecies += scene->mMeshes[x]->mNumVertices;
-		for (int y = 0; y < scene->mMeshes[x]->mNumFaces; y++){
-			for (int z = 0; z < 3; z++){
-				tempTotal++;
-			}
-		}
-		meshSizes.push_back((tempTotal - sizeBefore));
-	}
-	myVBO.Create((tempTotal * (8 + (2*NUM_BONES_PER_VEREX)) * sizeof(float)));
+bool Model::Load(char* filepath){
+	this->filePath = filepath;
+	glGenBuffers(NUM_VBs, buffers);
+	glGenVertexArrays(1, &VAOid);
+	glBindVertexArray(VAOid);
+	scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 	if (scene){
 		globalInverseTransform = scene->mRootNode->mTransformation;
 		globalInverseTransform.Inverse();
+		InitFromScene();
 	} else {
 		std::cout << "Error Loading Model" << std::endl;
 		return false;
 	}
-	vector<VertexBoneData> Bones;
-	Bones.resize(tempTotal);
-	for (int x = 0; x < scene->mNumMeshes; x++){
-		LoadBones(x, scene->mMeshes[x], Bones);
-	}
-	int tempVertCount2 = 0;
-	if (scene->mNumMeshes == 6)
-		myfile2.open("Debug.txt");
-	for (int x = 0; x < scene->mNumMeshes; x++){
-		aiMesh* mesh = scene->mMeshes[x];
-		int faceCount = mesh->mNumFaces;
-		materialIndices.push_back(mesh->mMaterialIndex);
-		const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
-		int tempVertCount = 0;
-		for (int y = 0; y < faceCount; y++){
-			tempVertCount2++;
-			const aiFace& face = mesh->mFaces[y];
-			std::vector<int> boneIDs;
-			std::vector<float> myWeights;
-			for (int currentBoneID = 0; currentBoneID < NUM_BONES_PER_VEREX; currentBoneID++){
-				boneIDs.push_back(Bones[tempVertCount2].IDs[currentBoneID]);
-				myWeights.push_back(Bones[tempVertCount2].Weights[currentBoneID]);
-			}
-			for (int z = 0; z < 3; z++){
-				const aiVector3D* pos = &(mesh->mVertices[face.mIndices[z]]);
-				const aiVector3D* normal = &(mesh->mNormals[face.mIndices[z]]);
-				const aiVector3D* uv = &(mesh->mTextureCoords[0][face.mIndices[z]]);
+}
+bool Model::InitFromScene(){
+	meshes.resize(scene->mNumMeshes);
 
-				if (pos != NULL){
-					myVBO.data[myVBO.count++] = (pos->x);
-					myVBO.data[myVBO.count++] = (pos->y);
-					myVBO.data[myVBO.count++] = (pos->z);
-				}
-				else{
-					myVBO.data[myVBO.count++] = (0.0f);
-					myVBO.data[myVBO.count++] = (0.0f);
-					myVBO.data[myVBO.count++] = (0.0f);
-				}
-				if (uv != NULL && mesh->HasTextureCoords(0)){
-					myVBO.data[myVBO.count++] = (uv->x);
-					myVBO.data[myVBO.count++] = (uv->y);
-				}
-				else{
-					myVBO.data[myVBO.count++] = (0.0f);
-					myVBO.data[myVBO.count++] = (0.0f);
-				}
-				if (mesh->HasNormals() && normal != NULL){
-					myVBO.data[myVBO.count++] = normal->x;
-					myVBO.data[myVBO.count++] = normal->y;
-					myVBO.data[myVBO.count++] = normal->z;
-				}
-				else{
-					myVBO.data[myVBO.count++] = (0.0f);
-					myVBO.data[myVBO.count++] = (0.0f);
-					myVBO.data[myVBO.count++] = (0.0f);
-				}
-				for (int myBoneData = 0; myBoneData < NUM_BONES_PER_VEREX; myBoneData++){
-					myVBO.data[myVBO.count++] = (float)boneIDs[myBoneData];
-				}
-				for (int myWeightData = 0; myWeightData < NUM_BONES_PER_VEREX; myWeightData++){
-					myVBO.data[myVBO.count++] = myWeights[myWeightData];
-				}
-				if (scene->mNumMeshes == 6){
-					myfile2 << tempVertCount2 << ": ";
-					for (int q = myVBO.count - 8; q < myVBO.count; q++){
-						myfile2 << myVBO.data[q] << " ";
-					}
-					myfile2 << "\n";
-				}
-				myVBO.debugCount++;
-				tempVertCount++;
-			}
-			//tempVertCount2++;
-		}
-		int meshVertices = mesh->mNumVertices;
+	vector<glm::vec3> Positions;
+	vector<glm::vec3> Normals;
+	vector<glm::vec2> TexCoords;
+	vector<VertexBoneData> Bones;
+	vector<uint> Indices;
+
+	uint NumVertices = 0;
+	uint NumIndices = 0;
+
+	for (uint i = 0; i < meshes.size(); i++) {
+		meshes[i].MaterialIndex = scene->mMeshes[i]->mMaterialIndex;
+		meshes[i].NumIndices = scene->mMeshes[i]->mNumFaces * 3;
+		meshes[i].BaseVertex = NumVertices;
+		meshes[i].BaseIndex = NumIndices;
+
+		NumVertices += scene->mMeshes[i]->mNumVertices;
+		NumIndices += meshes[i].NumIndices;
 	}
+
+	Positions.reserve(NumVertices);
+	Normals.reserve(NumVertices);
+	TexCoords.reserve(NumVertices);
+	Bones.resize(NumVertices);
+	Indices.reserve(NumIndices);
+
+	for (uint i = 0; i < meshes.size(); i++) {
+		const aiMesh* paiMesh = scene->mMeshes[i];
+		InitMesh(i, paiMesh, Positions, Normals, TexCoords, Bones, Indices);
+	}
+
+	LoadTextures();
+
+
+	shader->Use();
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[POS_VB]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Positions[0]) * Positions.size(), &Positions[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[TEXCOORD_VB]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(TexCoords[0]) * TexCoords.size(), &TexCoords[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[NORMAL_VB]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Normals[0]) * Normals.size(), &Normals[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[BONE_VB]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Bones[0]) * Bones.size(), &Bones[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(3);
+	glVertexAttribIPointer(3, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)0);
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[INDEX_BUFFER]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+
+	return true;
+}
+
+void Model::InitMesh(uint MeshIndex, const aiMesh* paiMesh,vector<glm::vec3>& Positions,vector<glm::vec3>& Normals,vector<glm::vec2>& TexCoords,vector<VertexBoneData>& Bones,vector<uint>& Indices)
+{
+	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
+	// Populate the vertex attribute vectors
+	for (uint i = 0; i < paiMesh->mNumVertices; i++) {
+		const aiVector3D* pPos = &(paiMesh->mVertices[i]);
+		const aiVector3D* pNormal = &(paiMesh->mNormals[i]);
+		const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+
+		Positions.push_back(glm::vec3(pPos->x, pPos->y, pPos->z));
+		Normals.push_back(glm::vec3(pNormal->x, pNormal->y, pNormal->z));
+		TexCoords.push_back(glm::vec2(pTexCoord->x, pTexCoord->y));
+	}
+
+	LoadBones(MeshIndex, paiMesh, Bones);
+
+	// Populate the index buffer
+	for (uint i = 0; i < paiMesh->mNumFaces; i++) {
+		const aiFace& Face = paiMesh->mFaces[i];
+		assert(Face.mNumIndices == 3);
+		Indices.push_back(Face.mIndices[0]);
+		Indices.push_back(Face.mIndices[1]);
+		Indices.push_back(Face.mIndices[2]);
+	}
+}
+
+
+bool Model::LoadTextures(){
 	if (scene->mNumMeshes == 6)
-		myfile2.close();
+		bool debug239u = true;
+	for (int x = 0; x < scene->mNumMeshes; x++){
+		materialIndices.push_back(scene->mMeshes[x]->mMaterialIndex);
+	}
 	glActiveTexture(GL_TEXTURE0);
 	numberOfMaterials = scene->mNumMaterials;
 	std::vector<int> materialRemap(numberOfMaterials);
@@ -174,7 +186,7 @@ bool Model::Load(char* filePath){
 			}
 		}
 	}
-	int size = meshSizes.size();
+	int size = scene->mNumMeshes;
 	for (int x = 0; x < size; x++){
 		int oldIndex = materialIndices[x];
 		materialIndices[x] = materialRemap[oldIndex];
@@ -184,22 +196,7 @@ bool Model::Load(char* filePath){
 	return true;
 };
 void Model::FinalizeVBO(){
-	shader->Use();
-	glGenVertexArrays(1, &VAOid);
-	glBindVertexArray(VAOid);
-	myVBO.BindCreate();
-	myVBO.Upload(GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, neededSize, 0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, neededSize, (void*)(sizeof(float)* 3));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, neededSize, (void*)(sizeof(float)* 5));
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, neededSize, (void*)(sizeof(float)* 8));
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, neededSize, (void*)((sizeof(float)* (8 + NUM_BONES_PER_VEREX))));
-	glBindVertexArray(0);
+
 };
 void Model::BindModelsVAO(){
 	glBindVertexArray(VAOid);
@@ -209,11 +206,11 @@ void Model::Render(){
 	if (!isLoaded)
 		return;
 	BindModelsVAO();
-	int size = meshSizes.size();
+	int size = meshes.size();
 	for(int x = 0; x < size; x++){
 		int iMatIndex = materialIndices[x];
 		textures[iMatIndex].Bind();
-		glDrawArrays(GL_TRIANGLES, meshStartIndices[x], meshSizes[x]); // Errors Drawing with the shader.
+		glDrawElementsBaseVertex(GL_TRIANGLES, meshes[x].NumIndices, GL_UNSIGNED_INT, (void*)(sizeof(uint)* meshes[x].BaseIndex), meshes[x].BaseVertex);
 	}
 	glBindVertexArray(0);
 };
@@ -227,31 +224,32 @@ void Model::Update(glm::mat4 model){
 		memset(tempName, 0, sizeof(tempName));
 		sprintf(tempName, "gBones[%d]", x);
 		GLuint tempPos = glGetUniformLocation(shader->ID, tempName);
-		glUniformMatrix4fv(tempPos, 1, GL_TRUE, (GLfloat*)(Transforms[x][0]));
+		Matrix4f tempMat = boneInfo[x].FinalTransformation;
+		glUniformMatrix4fv(tempPos, 1, GL_TRUE, tempMat.m[0]);
 	}
 }
 
 void Model::LoadBones(uint MeshIndex, const aiMesh* pMesh, vector<VertexBoneData>& Bones){
+	ofstream boneOffsetFile;
+	boneOffsetFile.open("boneOffsets" + std::to_string(static_cast<long long>(MeshIndex)) + ".txt");
 	for (uint i = 0; i < pMesh->mNumBones; i++) {
 		uint BoneIndex = 0;
 		string BoneName(pMesh->mBones[i]->mName.data);
+
 		if (boneMap.find(BoneName) == boneMap.end()) {
 			BoneIndex = boneCount;
 			boneCount++;
 			BoneInfo bi;
 			boneInfo.push_back(bi);
-			boneInfo[BoneIndex].BoneOffset = pMesh->mBones[i]->mOffsetMatrix;
-			boneMap[BoneName] = BoneIndex;
 		}
 		else {
 			BoneIndex = boneMap[BoneName];
 		}
+		boneMap[BoneName] = BoneIndex;
+		boneInfo[BoneIndex].BoneOffset = pMesh->mBones[i]->mOffsetMatrix;
 		for (uint j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
-			uint VertexID = meshStartVerts[MeshIndex] + pMesh->mBones[i]->mWeights[j].mVertexId;
+			uint VertexID = meshes[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;
 			float Weight = pMesh->mBones[i]->mWeights[j].mWeight;
-			//if (scene->mNumMeshes == 6){
-				//std::cout << VertexID << ": " << "(" << BoneIndex << ", " << Weight << ")\n";
-			//}
 			Bones[VertexID].AddBoneData(BoneIndex, Weight);
 		}
 	}
@@ -259,19 +257,36 @@ void Model::LoadBones(uint MeshIndex, const aiMesh* pMesh, vector<VertexBoneData
 void Model::BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms){
 	if (scene->HasAnimations()){
 		Matrix4f Identity;
-		Identity.IsIdentity();
-		float TicksPerSecond = (float)(scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
+		Identity.InitIdentity();
+
+		float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f;
 		float TimeInTicks = TimeInSeconds * TicksPerSecond;
-		float AnimationTime = fmod(TimeInTicks, (float)scene->mAnimations[0]->mDuration);
+		float AnimationTime = fmod(TimeInTicks, scene->mAnimations[0]->mDuration);
 
 		ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
+
 		Transforms.resize(boneCount);
+
 		for (uint i = 0; i < boneCount; i++) {
 			Transforms[i] = boneInfo[i].FinalTransformation;
 		}
+		ofstream transformFile;
+		transformFile.open("transforms.txt");
+		for (int x = 0; x < Transforms.size(); x++){
+			transformFile << "Bone: " << x << "\n";
+			for (int y = 0; y < 4; y++){
+				for (int z = 0; z < 4; z++){
+					transformFile << ((Transforms[x].m[y][z])) << " ";
+				}
+				transformFile << "\n";
+			}
+		}
+		transformFile.close();
+		bool temp = false;
 	}
 }
-void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform){
+void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform)
+{
 	string NodeName(pNode->mName.data);
 
 	const aiAnimation* pAnimation = scene->mAnimations[0];
@@ -281,28 +296,34 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Ma
 	const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
 
 	if (pNodeAnim) {
+		// Interpolate scaling and generate scaling transformation matrix
 		aiVector3D Scaling;
 		CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
 		Matrix4f ScalingM;
-		ScalingM = ScalingM.Scaling(Scaling, ScalingM);
+		ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
 
+		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		Matrix4f RotationM;
-		RotationM = Matrix4f(RotationQ.GetMatrix());
+		Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
 
+		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
 		CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
 		Matrix4f TranslationM;
-		TranslationM = TranslationM.Translation(Translation, TranslationM);
+		TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
 
+		// Combine the above transformations
 		NodeTransformation = TranslationM * RotationM * ScalingM;
 	}
+
 	Matrix4f GlobalTransformation = ParentTransform * NodeTransformation;
+
 	if (boneMap.find(NodeName) != boneMap.end()) {
 		uint BoneIndex = boneMap[NodeName];
 		boneInfo[BoneIndex].FinalTransformation = globalInverseTransform * GlobalTransformation * boneInfo[BoneIndex].BoneOffset;
 	}
+
 	for (uint i = 0; i < pNode->mNumChildren; i++) {
 		ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
 	}
@@ -417,7 +438,128 @@ void Model::VertexBoneData::AddBoneData(uint BoneID, float Weight) {
 			return;
 		}
 	}
-
 	// should never get here - more bones than we have space for
 	assert(0);
+}
+void Matrix4f::InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ)
+{
+	m[0][0] = ScaleX; m[0][1] = 0.0f;   m[0][2] = 0.0f;   m[0][3] = 0.0f;
+	m[1][0] = 0.0f;   m[1][1] = ScaleY; m[1][2] = 0.0f;   m[1][3] = 0.0f;
+	m[2][0] = 0.0f;   m[2][1] = 0.0f;   m[2][2] = ScaleZ; m[2][3] = 0.0f;
+	m[3][0] = 0.0f;   m[3][1] = 0.0f;   m[3][2] = 0.0f;   m[3][3] = 1.0f;
+}
+
+void Matrix4f::InitRotateTransform(float RotateX, float RotateY, float RotateZ)
+{
+	Matrix4f rx, ry, rz;
+
+	const float x = ToRadian(RotateX);
+	const float y = ToRadian(RotateY);
+	const float z = ToRadian(RotateZ);
+
+	rx.m[0][0] = 1.0f; rx.m[0][1] = 0.0f; rx.m[0][2] = 0.0f; rx.m[0][3] = 0.0f;
+	rx.m[1][0] = 0.0f; rx.m[1][1] = cosf(x); rx.m[1][2] = -sinf(x); rx.m[1][3] = 0.0f;
+	rx.m[2][0] = 0.0f; rx.m[2][1] = sinf(x); rx.m[2][2] = cosf(x); rx.m[2][3] = 0.0f;
+	rx.m[3][0] = 0.0f; rx.m[3][1] = 0.0f; rx.m[3][2] = 0.0f; rx.m[3][3] = 1.0f;
+
+	ry.m[0][0] = cosf(y); ry.m[0][1] = 0.0f; ry.m[0][2] = -sinf(y); ry.m[0][3] = 0.0f;
+	ry.m[1][0] = 0.0f; ry.m[1][1] = 1.0f; ry.m[1][2] = 0.0f; ry.m[1][3] = 0.0f;
+	ry.m[2][0] = sinf(y); ry.m[2][1] = 0.0f; ry.m[2][2] = cosf(y); ry.m[2][3] = 0.0f;
+	ry.m[3][0] = 0.0f; ry.m[3][1] = 0.0f; ry.m[3][2] = 0.0f; ry.m[3][3] = 1.0f;
+
+	rz.m[0][0] = cosf(z); rz.m[0][1] = -sinf(z); rz.m[0][2] = 0.0f; rz.m[0][3] = 0.0f;
+	rz.m[1][0] = sinf(z); rz.m[1][1] = cosf(z); rz.m[1][2] = 0.0f; rz.m[1][3] = 0.0f;
+	rz.m[2][0] = 0.0f; rz.m[2][1] = 0.0f; rz.m[2][2] = 1.0f; rz.m[2][3] = 0.0f;
+	rz.m[3][0] = 0.0f; rz.m[3][1] = 0.0f; rz.m[3][2] = 0.0f; rz.m[3][3] = 1.0f;
+
+	*this = rz * ry * rx;
+}
+
+void Matrix4f::InitTranslationTransform(float x, float y, float z)
+{
+	m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = x;
+	m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = y;
+	m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = z;
+	m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+}
+
+float Matrix4f::Determinant() const
+{
+	return m[0][0] * m[1][1] * m[2][2] * m[3][3] - m[0][0] * m[1][1] * m[2][3] * m[3][2] + m[0][0] * m[1][2] * m[2][3] * m[3][1] - m[0][0] * m[1][2] * m[2][1] * m[3][3]
+		+ m[0][0] * m[1][3] * m[2][1] * m[3][2] - m[0][0] * m[1][3] * m[2][2] * m[3][1] - m[0][1] * m[1][2] * m[2][3] * m[3][0] + m[0][1] * m[1][2] * m[2][0] * m[3][3]
+		- m[0][1] * m[1][3] * m[2][0] * m[3][2] + m[0][1] * m[1][3] * m[2][2] * m[3][0] - m[0][1] * m[1][0] * m[2][2] * m[3][3] + m[0][1] * m[1][0] * m[2][3] * m[3][2]
+		+ m[0][2] * m[1][3] * m[2][0] * m[3][1] - m[0][2] * m[1][3] * m[2][1] * m[3][0] + m[0][2] * m[1][0] * m[2][1] * m[3][3] - m[0][2] * m[1][0] * m[2][3] * m[3][1]
+		+ m[0][2] * m[1][1] * m[2][3] * m[3][0] - m[0][2] * m[1][1] * m[2][0] * m[3][3] - m[0][3] * m[1][0] * m[2][1] * m[3][2] + m[0][3] * m[1][0] * m[2][2] * m[3][1]
+		- m[0][3] * m[1][1] * m[2][2] * m[3][0] + m[0][3] * m[1][1] * m[2][0] * m[3][2] - m[0][3] * m[1][2] * m[2][0] * m[3][1] + m[0][3] * m[1][2] * m[2][1] * m[3][0];
+}
+
+
+Matrix4f& Matrix4f::Inverse()
+{
+	float det = Determinant();
+	if (det == 0.0f)
+	{
+		assert(0);
+		return *this;
+	}
+
+	float invdet = 1.0f / det;
+
+	Matrix4f res;
+	res.m[0][0] = invdet  * (m[1][1] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[1][2] * (m[2][3] * m[3][1] - m[2][1] * m[3][3]) + m[1][3] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]));
+	res.m[0][1] = -invdet * (m[0][1] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[0][2] * (m[2][3] * m[3][1] - m[2][1] * m[3][3]) + m[0][3] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]));
+	res.m[0][2] = invdet  * (m[0][1] * (m[1][2] * m[3][3] - m[1][3] * m[3][2]) + m[0][2] * (m[1][3] * m[3][1] - m[1][1] * m[3][3]) + m[0][3] * (m[1][1] * m[3][2] - m[1][2] * m[3][1]));
+	res.m[0][3] = -invdet * (m[0][1] * (m[1][2] * m[2][3] - m[1][3] * m[2][2]) + m[0][2] * (m[1][3] * m[2][1] - m[1][1] * m[2][3]) + m[0][3] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]));
+	res.m[1][0] = -invdet * (m[1][0] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[1][2] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[1][3] * (m[2][0] * m[3][2] - m[2][2] * m[3][0]));
+	res.m[1][1] = invdet  * (m[0][0] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[0][2] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[0][3] * (m[2][0] * m[3][2] - m[2][2] * m[3][0]));
+	res.m[1][2] = -invdet * (m[0][0] * (m[1][2] * m[3][3] - m[1][3] * m[3][2]) + m[0][2] * (m[1][3] * m[3][0] - m[1][0] * m[3][3]) + m[0][3] * (m[1][0] * m[3][2] - m[1][2] * m[3][0]));
+	res.m[1][3] = invdet  * (m[0][0] * (m[1][2] * m[2][3] - m[1][3] * m[2][2]) + m[0][2] * (m[1][3] * m[2][0] - m[1][0] * m[2][3]) + m[0][3] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]));
+	res.m[2][0] = invdet  * (m[1][0] * (m[2][1] * m[3][3] - m[2][3] * m[3][1]) + m[1][1] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[1][3] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+	res.m[2][1] = -invdet * (m[0][0] * (m[2][1] * m[3][3] - m[2][3] * m[3][1]) + m[0][1] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[0][3] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+	res.m[2][2] = invdet  * (m[0][0] * (m[1][1] * m[3][3] - m[1][3] * m[3][1]) + m[0][1] * (m[1][3] * m[3][0] - m[1][0] * m[3][3]) + m[0][3] * (m[1][0] * m[3][1] - m[1][1] * m[3][0]));
+	res.m[2][3] = -invdet * (m[0][0] * (m[1][1] * m[2][3] - m[1][3] * m[2][1]) + m[0][1] * (m[1][3] * m[2][0] - m[1][0] * m[2][3]) + m[0][3] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]));
+	res.m[3][0] = -invdet * (m[1][0] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]) + m[1][1] * (m[2][2] * m[3][0] - m[2][0] * m[3][2]) + m[1][2] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+	res.m[3][1] = invdet  * (m[0][0] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]) + m[0][1] * (m[2][2] * m[3][0] - m[2][0] * m[3][2]) + m[0][2] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+	res.m[3][2] = -invdet * (m[0][0] * (m[1][1] * m[3][2] - m[1][2] * m[3][1]) + m[0][1] * (m[1][2] * m[3][0] - m[1][0] * m[3][2]) + m[0][2] * (m[1][0] * m[3][1] - m[1][1] * m[3][0]));
+	res.m[3][3] = invdet  * (m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) + m[0][1] * (m[1][2] * m[2][0] - m[1][0] * m[2][2]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]));
+	*this = res;
+
+	return *this;
+}
+
+Quaternion::Quaternion(float _x, float _y, float _z, float _w)
+{
+	x = _x;
+	y = _y;
+	z = _z;
+	w = _w;
+}
+
+void Quaternion::Normalize()
+{
+	float Length = sqrtf(x * x + y * y + z * z + w * w);
+
+	x /= Length;
+	y /= Length;
+	z /= Length;
+	w /= Length;
+}
+
+
+Quaternion Quaternion::Conjugate()
+{
+	Quaternion ret(-x, -y, -z, w);
+	return ret;
+}
+
+Quaternion operator*(const Quaternion& l, const Quaternion& r)
+{
+	const float w = (l.w * r.w) - (l.x * r.x) - (l.y * r.y) - (l.z * r.z);
+	const float x = (l.x * r.w) + (l.w * r.x) + (l.y * r.z) - (l.z * r.y);
+	const float y = (l.y * r.w) + (l.w * r.y) + (l.z * r.x) - (l.x * r.z);
+	const float z = (l.z * r.w) + (l.w * r.z) + (l.x * r.y) - (l.y * r.x);
+
+	Quaternion ret(x, y, z, w);
+
+	return ret;
 }

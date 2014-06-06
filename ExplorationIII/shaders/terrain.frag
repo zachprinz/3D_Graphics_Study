@@ -70,7 +70,6 @@ void main(){
 	vec3 lightColor = vec3(1.0f,1.0f,1.0f);
 
 	float fDiffuseIntensity = max(0.0, dot(normalize(vNormal), -vDirection)); 
-	outputColor = vMixedColor*vec4(lightColor*(ambientIntensity2+fDiffuseIntensity), 0.0);
-	//outputColor = vMixedColor; 
+	outputColor = vMixedColor;//*vec4(lightColor*(ambientIntensity2+fDiffuseIntensity ), 0.0);
 
 }

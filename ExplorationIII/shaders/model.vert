@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 inPosition;
 layout (location = 1) in vec2 inCoord;
 layout (location = 2) in vec3 inNormal;
-layout (location = 3) in vec4 BoneIDs;
+layout (location = 3) in ivec4 BoneIDs;
 layout (location = 4) in vec4 Weights;
 
 smooth out vec3 vNormal;
@@ -26,10 +26,10 @@ uniform float ambientIntensity;
 void main()
 {
 	if(Weights[0] != 0.0 || Weights[1] != 0.0 || Weights[2] != 0.0 || Weights[3] != 0.0){
-		mat4 BoneTransform = gBones[int(BoneIDs[0])] * Weights[0];
-		BoneTransform += gBones[int(BoneIDs[1])] * Weights[1];
-		BoneTransform += gBones[int(BoneIDs[2])] * Weights[2];
-		BoneTransform += gBones[int(BoneIDs[3])] * Weights[3];
+		mat4 BoneTransform = gBones[int(BoneIDs[0])] * float(Weights[0]);
+		BoneTransform = BoneTransform + gBones[int(BoneIDs[1])] * float(Weights[1]);
+		BoneTransform = BoneTransform + gBones[int(BoneIDs[2])] * float(Weights[2]);
+		BoneTransform = BoneTransform + gBones[int(BoneIDs[3])] * float(Weights[3]);
 
 		ambientIntensity2 = ambientIntensity;
 		vTexCoord = inCoord;
@@ -43,11 +43,12 @@ void main()
 		
 		vec4 vRes = normalMatrix*vec4(inNormal, 0.0);
 		vNormal = vRes.xyz;
-		
-		overrideColor2 = overrideColor;
-		doOverride2 = doOverride;
+		//float debugColor = (Weights[0]*(BoneIDs[0]/32.0) + Weights[1]*(BoneIDs[1]/32.0) + Weights[2]*(BoneIDs[2]/32.0) + Weights[3]*(BoneIDs[3]/32.0))/4.0;
+		//overrideColor2 = vec4(debugColor,debugColor,debugColor,1.0);
+		doOverride2 = 0;
 	}
 	else{
+		doOverride2 = 0;
 		ambientIntensity2 = ambientIntensity;
 		vTexCoord = inCoord;
 		vDirection = lightDirection;
