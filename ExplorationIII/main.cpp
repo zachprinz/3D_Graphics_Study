@@ -188,8 +188,9 @@ int main(void){
 	//GameObject user("data\\models\\Witch\\Witch.x", glm::vec2(50, 50));
 	GameObject user("data\\models\\User\\OBm.x", glm::vec2(50, 50));
 	character = &user;
+	user.GetModel()->SetModelOffset(glm::vec3(-2.75, 0.0, -2.85));
 	user.Rotate(glm::vec3(0.0, 180.0, 0.0));
-	user.SetScale(glm::vec3(0.025, 0.025, 0.025));
+	user.GetModel()->SetModelScale(glm::vec3(0.025, 0.025, 0.025));
 	//user.Translate(glm::vec3(0.0, 5.0, 0.0));
 
 	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(53,50));

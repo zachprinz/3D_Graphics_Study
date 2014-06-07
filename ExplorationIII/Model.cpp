@@ -53,6 +53,8 @@ Model::Model(){
 	play = false;
 	loop = false;
 	paused = false;
+	modelOffset = glm::vec3(0.0, 0.0, 0.0);
+	modelScale = glm::vec3(1.0, 1.0, 1.0);
 	currentAnimation = 88;
 };
 bool Model::Load(char* filepath){
@@ -245,7 +247,11 @@ void Model::Render(){
 };
 void Model::Update(glm::mat4 model){
 	shader->Use();
-	shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", model);
+	glm::mat4 tempModel = model;
+	tempModel = glm::scale(tempModel, modelScale);
+	tempModel = glm::translate(tempModel, modelOffset);
+	std::cout << "Model Offset: (" << modelOffset.x << " ," << modelOffset.y << " ," << modelOffset.z << " )" << std::endl;
+	shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", tempModel);
 	vector<Matrix4f> Transforms;
 	if (isAnimated){
 		BoneTransform(Transforms);
@@ -393,6 +399,15 @@ void Model::SetUserMeshes(){
 	userMeshes["OBM_Head_UpperTeeth"] = 1;
 	userMeshes["OBheadStyleB"] = 1;
 	userMeshes["BOOTSleatherArmour"] = 1;
+}
+void Model::SetModelOffset(glm::vec3 newOffset){
+	modelOffset = newOffset;
+}
+void Model::SetModelScale(glm::vec3 newScale){
+	modelScale = newScale;
+}
+glm::vec3 Model::GetModelOffset(){
+	return modelOffset;
 }
 uint Model::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim){
 	for (uint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++) {

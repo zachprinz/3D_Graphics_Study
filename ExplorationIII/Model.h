@@ -178,7 +178,12 @@ public:
 	void Play();
 	void Pause();
 	void Resume();
+	void SetModelOffset(glm::vec3);
+	void SetModelScale(glm::vec3);
+	glm::vec3 GetModelOffset();
 private:
+	glm::vec3 modelScale;
+	glm::vec3 modelOffset;
 	void SetUserMeshes();
 	static map<std::string, int> userMeshes;
 	std::string filePath;

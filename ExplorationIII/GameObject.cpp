@@ -36,6 +36,7 @@ void GameObject::Update(){
 	modelMatrix = glm::rotate(modelMatrix, rotation.y, Y_AXIS);
 	modelMatrix = glm::rotate(modelMatrix, rotation.z, Z_AXIS);
 	modelMatrix = glm::translate(modelMatrix, position);
+	modelMatrix = glm::translate(modelMatrix, model.GetModelOffset());
 };
 void GameObject::Render(){
 	model.Update(modelMatrix);
@@ -76,4 +77,7 @@ void GameObject::Walk2(){
 }
 void GameObject::Walk3(){
 	model.Resume();
+}
+Model* GameObject::GetModel(){
+	return &model;
 }

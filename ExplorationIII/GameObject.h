@@ -29,6 +29,7 @@ public:
 	void Walk2();
 	void Walk3(); 
 	void Walk4();
+	Model* GetModel();
 private:
 	Model model;
 	int ID;
