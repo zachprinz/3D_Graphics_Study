@@ -65,4 +65,15 @@ btRigidBody* GameObject::GetBody(){
 }
 void GameObject::Walk(){
 	model.SetAnimation("WizardWalk");
+	model.Play();
+}
+void GameObject::Walk4(){
+	model.SetAnimation("WizardWalk");
+	model.Loop();
+}
+void GameObject::Walk2(){
+	model.Pause();
+}
+void GameObject::Walk3(){
+	model.Resume();
 }

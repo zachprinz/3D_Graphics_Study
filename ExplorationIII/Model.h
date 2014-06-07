@@ -167,13 +167,17 @@ public:
 	void Update(glm::mat4);
 	void Render();
 	static Shader* shader;
-	bool BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms);
+	bool BoneTransform(vector<Matrix4f>& Transforms);
 	uint getBoneCount() const { return boneCount; }
 	static float elapsedTime;
 	bool isAnimated;
 	map<std::string, int> animations;
 	int currentAnimation;
 	void SetAnimation(std::string);
+	void Loop();
+	void Play();
+	void Pause();
+	void Resume();
 private:
 	void SetUserMeshes();
 	static map<std::string, int> userMeshes;
@@ -194,7 +198,9 @@ private:
 	int numberOfMaterials;
 	float startTime;
 	bool loop;
-	bool playing;
+	bool play;
+	bool paused;
+	float pauseTime;
 	float animationStartTime;
 	//Animation
 
@@ -252,14 +258,14 @@ private:
 	std::vector<BoneInfo> boneInfo;
 	Matrix4f globalInverseTransform;
 	void LoadBones(uint MeshIndex, const aiMesh* paiMesh, vector<VertexBoneData>& Bones);
-	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-	void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-	void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim, bool resolve = false);
+	void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim, bool resolve = false);
+	void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim, bool resolve = false);
 	uint FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
 	uint FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
 	uint FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
 	const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const string NodeName);
-	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
+	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform, bool resolve = false);
 	bool InitFromScene(const aiScene* pScene, const string& Filename);
 	const aiVector3D* normal;
 	GLuint boneLocations;

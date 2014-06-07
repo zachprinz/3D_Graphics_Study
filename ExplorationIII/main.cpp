@@ -51,7 +51,7 @@ double mouseYPos;
 float horizontalAngle = 3.14f;
 float verticalAngle = 0.0f;
 
-//GameObject* character;
+GameObject* character;
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -81,9 +81,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_F2:
 			Scene::Instance->SwapDebug();
 			break;
-		//case GLFW_KEY_SPACE:
-		//	character->Walk();
-		//	break;
+		case GLFW_KEY_SPACE:
+			character->Walk2();
+			break;
+		case GLFW_KEY_ENTER:
+			character->Walk();
+			break;
+		case GLFW_KEY_LEFT_SHIFT:
+			character->Walk4();
+			break;
 		}
 	}
 	if (action == GLFW_RELEASE){
@@ -105,6 +111,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 		case GLFW_KEY_E:
 			eIsDown = !true;
+			break;
+		case GLFW_KEY_SPACE:
+			character->Walk3();
 			break;
 		}
 	}
@@ -178,7 +187,7 @@ int main(void){
 	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
 	//GameObject user("data\\models\\Witch\\Witch.x", glm::vec2(50, 50));
 	GameObject user("data\\models\\User\\OBm.x", glm::vec2(50, 50));
-	//character = &user;
+	character = &user;
 	user.Rotate(glm::vec3(0.0, 180.0, 0.0));
 	user.SetScale(glm::vec3(0.025, 0.025, 0.025));
 	//user.Translate(glm::vec3(0.0, 5.0, 0.0));

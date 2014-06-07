@@ -26,6 +26,9 @@ public:
 	btRigidBody* GetBody();
 	static int count;
 	void Walk();
+	void Walk2();
+	void Walk3(); 
+	void Walk4();
 private:
 	Model model;
 	int ID;
