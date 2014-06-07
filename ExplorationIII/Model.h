@@ -24,6 +24,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
 #include <FI/FreeImage.h>
 #include <iostream>
 #include <fstream>
@@ -166,10 +167,16 @@ public:
 	void Update(glm::mat4);
 	void Render();
 	static Shader* shader;
-	void BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms);
+	bool BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms);
 	uint getBoneCount() const { return boneCount; }
 	static float elapsedTime;
+	bool isAnimated;
+	map<std::string, int> animations;
+	int currentAnimation;
+	void SetAnimation(std::string);
 private:
+	void SetUserMeshes();
+	static map<std::string, int> userMeshes;
 	std::string filePath;
 	bool InitFromScene();
 	GLuint buffers[NUM_VBs];
@@ -185,7 +192,10 @@ private:
 	std::vector<bool> meshIsTextured;
 	std::vector<int> meshStartVerts;
 	int numberOfMaterials;
-
+	float startTime;
+	bool loop;
+	bool playing;
+	float animationStartTime;
 	//Animation
 
 	struct BoneInfo {
@@ -219,6 +229,9 @@ private:
 			BaseIndex = 0;
 			MaterialIndex = 0;
 		}
+		std::string materialPath;
+		std::string name;
+		bool draw;
 		unsigned int NumIndices;
 		unsigned int BaseVertex;
 		unsigned int BaseIndex;

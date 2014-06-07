@@ -48,7 +48,7 @@ public:
 	std::string GetPath();
 	void Delete();
 	GLuint samplerID;
-
+	bool created;
 private:
 	int width, height, BPP;
 	GLuint id;

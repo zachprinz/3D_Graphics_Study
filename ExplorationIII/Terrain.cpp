@@ -13,7 +13,7 @@ Terrain::Terrain(){
 }
 
 void Terrain::LoadTextures(){
-	std::string textureNames[] = { "fungus.dds", "sand_grass_02.jpg", "rock_2_4w.jpg", "sand.jpg", "path.png" };
+	std::string textureNames[] = { "fungus.dds", "Grass\\diffus.tga", "rock_2_4w.jpg", "sand.jpg", "path.png" };
 	for (int x = 0; x < 5; x++){
 		textures[x].Load("data\\textures\\" + textureNames[x], true);
 	}
@@ -29,7 +29,7 @@ void Terrain::Render(){
 	GLuint sampler = textures[0].samplerID;
 	for (int x = 0; x < 5; x++){
 		char sSamplerName[256];
-		sprintf(sSamplerName, "gSampler[%d]", x);
+		sprintf_s(sSamplerName, "gSampler[%d]", x);
 		shader->SetUniform(sSamplerName, x);
 		textures[x].Bind(x, sampler);
 	}

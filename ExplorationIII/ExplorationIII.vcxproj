@@ -66,14 +66,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLM\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLM\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\include;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Bullet\include\src</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;FreeImage.lib;assimp.lib;CEGUI.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\lib\Release\Win32;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\lib\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3dll.lib;glew32s.lib;opengl32.lib;FreeImage.lib;assimp.lib;CEGUICoreWindowRendererSet.lib;CEGUIOpenGLRenderer-0.lib;CEGUIBase-0.lib;BulletSoftBody.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;OpenGLSupport.lib;Bullet3Common.lib;Bullet3Collision.lib;Bullet3Dynamics.lib;Bullet3Geometry.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLEW\lib\Release\Win32;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\GLFW\lib;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\FreeImage\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Assimp\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\CEGUI\lib\Release;C:\Users\Zachary\Documents\Visual Studio 2013\Projects\ExplorationIII\Libraries\Bullet\lib\Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

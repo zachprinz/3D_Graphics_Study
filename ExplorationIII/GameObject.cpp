@@ -10,7 +10,6 @@ int GameObject::count;
 GameObject::GameObject(char* meshName, glm::vec2 position, bool isStatic){
 	ID = count++;
 	model.Load(meshName);
-	
 	this->position = Scene::Instance->getMap()->getTilePosition(position);
 	rotation = glm::vec3(0.0, 0.0, 0.0);
 	scale = glm::vec3(1.0, 1.0, 1.0);
@@ -63,4 +62,7 @@ int GameObject::GetID(){
 };
 btRigidBody* GameObject::GetBody(){
 	return body;
+}
+void GameObject::Walk(){
+	model.SetAnimation("WizardWalk");
 }

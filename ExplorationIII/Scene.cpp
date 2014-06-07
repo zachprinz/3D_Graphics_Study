@@ -15,7 +15,7 @@ Scene::Scene(char* terrainPath, char* skyboxPath, glm::vec3 terrainSize){
 	if (Instance == NULL) Instance = this;
 	map = new Map(glm::vec2(100, 100), terrainPath, terrainSize);
 	skybox = new Skybox();
-	skybox->Load(skyboxPath, "front.jpg", "back.png", "left.png", "right.png", "top.png", "bottom.png");
+	skybox->Load(skyboxPath, "front.jpg", "back.jpg", "left.jpg", "right.jpg", "top.jpg", "bottom.jpg");
 
 	//Physics
 	broadphase = new btDbvtBroadphase();

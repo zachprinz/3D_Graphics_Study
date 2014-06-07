@@ -13,12 +13,23 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <GLFW/glfw3.h>
 
 
 std::vector<Texture> Model::textures;
 Shader* Model::shader;
 float Model::neededSize = 0;
 float Model::elapsedTime = 0;
+map<std::string, int> Model::userMeshes;
+
+void Model::SetAnimation(std::string animationName){
+	if (isAnimated){
+		playing = true;
+		loop = true; // debug
+		animationStartTime = glfwGetTime();
+		currentAnimation = animations[animationName];
+	}
+}
 
 std::string GetDirectoryPath(std::string sFilePath){
 	std::string sDirectory = "";
@@ -35,28 +46,34 @@ Model::Model(){
 	if (neededSize == 0){
 		textures.reserve(50);
 		neededSize = sizeof(float)* (8 + (2*NUM_BONES_PER_VEREX));
-		std::cout << "Needed Size: " << std::to_string(neededSize) << std::endl;
 	}
 	isLoaded = false;
+	playing = true;
+	loop = true;
+	currentAnimation = 88;
 };
 bool Model::Load(char* filepath){
+	std::cout << "Loading Model: " << filepath << std::endl;
+	startTime = glfwGetTime();
 	this->filePath = filepath;
 	glGenBuffers(NUM_VBs, buffers);
 	glGenVertexArrays(1, &VAOid);
 	glBindVertexArray(VAOid);
 	scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+	std::cout << "\tImported Model: " << glfwGetTime() - startTime;
 	if (scene){
 		globalInverseTransform = scene->mRootNode->mTransformation;
 		globalInverseTransform.Inverse();
 		InitFromScene();
 	} else {
-		std::cout << "Error Loading Model" << std::endl;
+		std::cout << "\tError Loading Model" << std::endl;
 		return false;
 	}
 }
 bool Model::InitFromScene(){
 	meshes.resize(scene->mNumMeshes);
-
+	if (meshes.size() > 10)
+		SetUserMeshes();
 	vector<glm::vec3> Positions;
 	vector<glm::vec3> Normals;
 	vector<glm::vec2> TexCoords;
@@ -71,9 +88,19 @@ bool Model::InitFromScene(){
 		meshes[i].NumIndices = scene->mMeshes[i]->mNumFaces * 3;
 		meshes[i].BaseVertex = NumVertices;
 		meshes[i].BaseIndex = NumIndices;
-
-		NumVertices += scene->mMeshes[i]->mNumVertices;
-		NumIndices += meshes[i].NumIndices;
+		meshes[i].draw = true; // Check later
+		aiString tempPath;
+		int tempTexLoc = 0;
+		if (scene->mMaterials[scene->mMeshes[i]->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, tempTexLoc, &tempPath) == AI_SUCCESS)
+			meshes[i].name = tempPath.C_Str();
+		meshes[i].materialPath = GetDirectoryPath(filePath) + meshes[i].name;
+		meshes[i].name = meshes[i].name.substr(0, meshes[i].name.find("."));
+		if (scene->mNumMeshes > 100 && userMeshes.find(meshes[i].name) == userMeshes.end())
+			meshes[i].draw = false;
+		if (meshes[i].draw){
+			NumVertices += scene->mMeshes[i]->mNumVertices;
+			NumIndices += meshes[i].NumIndices;
+		}
 	}
 
 	Positions.reserve(NumVertices);
@@ -84,11 +111,14 @@ bool Model::InitFromScene(){
 
 	for (uint i = 0; i < meshes.size(); i++) {
 		const aiMesh* paiMesh = scene->mMeshes[i];
-		InitMesh(i, paiMesh, Positions, Normals, TexCoords, Bones, Indices);
+		if (meshes[i].draw){
+			InitMesh(i, paiMesh, Positions, Normals, TexCoords, Bones, Indices);
+			std::cout << "\tFinished Initiating Mesh: " << meshes[i].name << " \tTime: " << glfwGetTime() - startTime << std::endl;
+		}
 	}
-
+	std::cout << "\tFinished Initiating Textures: " << glfwGetTime() - startTime << std::endl;
 	LoadTextures();
-
+	std::cout << "\tFinished Initiating Textures: " << glfwGetTime() - startTime << std::endl;
 
 	shader->Use();
 
@@ -124,6 +154,7 @@ bool Model::InitFromScene(){
 
 void Model::InitMesh(uint MeshIndex, const aiMesh* paiMesh,vector<glm::vec3>& Positions,vector<glm::vec3>& Normals,vector<glm::vec2>& TexCoords,vector<VertexBoneData>& Bones,vector<uint>& Indices)
 {
+
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 	// Populate the vertex attribute vectors
 	for (uint i = 0; i < paiMesh->mNumVertices; i++) {
@@ -135,8 +166,9 @@ void Model::InitMesh(uint MeshIndex, const aiMesh* paiMesh,vector<glm::vec3>& Po
 		Normals.push_back(glm::vec3(pNormal->x, pNormal->y, pNormal->z));
 		TexCoords.push_back(glm::vec2(pTexCoord->x, pTexCoord->y));
 	}
-
+	std::cout << "\t\Loading Bones: ... ";
 	LoadBones(MeshIndex, paiMesh, Bones);
+	std::cout << glfwGetTime() - startTime << std::endl;
 
 	// Populate the index buffer
 	for (uint i = 0; i < paiMesh->mNumFaces; i++) {
@@ -152,21 +184,17 @@ void Model::InitMesh(uint MeshIndex, const aiMesh* paiMesh,vector<glm::vec3>& Po
 bool Model::LoadTextures(){
 	if (scene->mNumMeshes == 6)
 		bool debug239u = true;
+	numberOfMaterials = 0;
 	for (int x = 0; x < scene->mNumMeshes; x++){
-		materialIndices.push_back(scene->mMeshes[x]->mMaterialIndex);
+		if (meshes[x].draw){
+			materialIndices.push_back(scene->mMeshes[x]->mMaterialIndex);
+			numberOfMaterials++;
+		}
 	}
 	glActiveTexture(GL_TEXTURE0);
-	numberOfMaterials = scene->mNumMaterials;
-	std::vector<int> materialRemap(numberOfMaterials);
-	for (int x = 0; x < numberOfMaterials; x++){
-		const aiMaterial* material = scene->mMaterials[x];
-		int texIndex = 0;
-		aiString path;
-		material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-		if (material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path) == AI_SUCCESS){
-			std::string dir = GetDirectoryPath(filePath);
-			std::string textureName = path.data;
-			std::string fullPath = dir + textureName;
+	for (int x = 0; x < meshes.size(); x++){
+		if (meshes[x].draw){
+			std::string fullPath = meshes[x].materialPath;
 			int texFound = -1;
 			int size = textures.size();
 			for (int y = 0; y < size; y++){
@@ -175,21 +203,17 @@ bool Model::LoadTextures(){
 					break;
 				}
 			}
-			if (texFound != -1)
-				materialRemap[x] = texFound;
+			if (texFound != -1){
+				meshes[x].MaterialIndex = texFound;
+			}
 			else{
 				Texture newTexture;
 				newTexture.Load(fullPath, true);
 				newTexture.SetFiltering(TEXTURE_FILTER_MAG_BILINEAR, TEXTURE_FILTER_MIN_BILINEAR_MIPMAP);
-				materialRemap[x] = textures.size();
+				meshes[x].MaterialIndex = textures.size();
 				textures.push_back(newTexture);
 			}
 		}
-	}
-	int size = scene->mNumMeshes;
-	for (int x = 0; x < size; x++){
-		int oldIndex = materialIndices[x];
-		materialIndices[x] = materialRemap[oldIndex];
 	}
 	isLoaded = true;
 	FinalizeVBO();
@@ -208,9 +232,10 @@ void Model::Render(){
 	BindModelsVAO();
 	int size = meshes.size();
 	for(int x = 0; x < size; x++){
-		int iMatIndex = materialIndices[x];
-		textures[iMatIndex].Bind();
-		glDrawElementsBaseVertex(GL_TRIANGLES, meshes[x].NumIndices, GL_UNSIGNED_INT, (void*)(sizeof(uint)* meshes[x].BaseIndex), meshes[x].BaseVertex);
+		if (meshes[x].draw){
+			textures[meshes[x].MaterialIndex].Bind();
+			glDrawElementsBaseVertex(GL_TRIANGLES, meshes[x].NumIndices, GL_UNSIGNED_INT, (void*)(sizeof(uint)* meshes[x].BaseIndex), meshes[x].BaseVertex);
+		}
 	}
 	glBindVertexArray(0);
 };
@@ -218,20 +243,24 @@ void Model::Update(glm::mat4 model){
 	shader->Use();
 	shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", model);
 	vector<Matrix4f> Transforms;
-	BoneTransform(elapsedTime, Transforms);//TODO
-	for (int x = 0; x < Transforms.size(); x++){
-		char tempName[128];
-		memset(tempName, 0, sizeof(tempName));
-		sprintf(tempName, "gBones[%d]", x);
-		GLuint tempPos = glGetUniformLocation(shader->ID, tempName);
-		Matrix4f tempMat = boneInfo[x].FinalTransformation;
-		glUniformMatrix4fv(tempPos, 1, GL_TRUE, tempMat.m[0]);
+	if (BoneTransform(glfwGetTime(), Transforms)){//TODO
+		for (int x = 0; x < Transforms.size(); x++){
+			char tempName[128];
+			memset(tempName, 0, sizeof(tempName));
+			sprintf_s(tempName, "gBones[%d]", x);
+			GLuint tempPos = glGetUniformLocation(shader->ID, tempName);
+			Matrix4f tempMat = boneInfo[x].FinalTransformation;
+			glUniformMatrix4fv(tempPos, 1, GL_TRUE, tempMat.m[0]);
+		}
 	}
 }
 
 void Model::LoadBones(uint MeshIndex, const aiMesh* pMesh, vector<VertexBoneData>& Bones){
-	ofstream boneOffsetFile;
-	boneOffsetFile.open("boneOffsets" + std::to_string(static_cast<long long>(MeshIndex)) + ".txt");
+	if (isAnimated){
+		for (int x = 0; x < scene->mNumAnimations; x++){
+			animations[scene->mAnimations[x]->mName.C_Str()] = x;
+		}
+	}
 	for (uint i = 0; i < pMesh->mNumBones; i++) {
 		uint BoneIndex = 0;
 		string BoneName(pMesh->mBones[i]->mName.data);
@@ -254,42 +283,37 @@ void Model::LoadBones(uint MeshIndex, const aiMesh* pMesh, vector<VertexBoneData
 		}
 	}
 }
-void Model::BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms){
+bool Model::BoneTransform(float TimeInSeconds, vector<Matrix4f>& Transforms){
 	if (scene->HasAnimations()){
-		Matrix4f Identity;
-		Identity.InitIdentity();
+		if (playing){
+			Matrix4f Identity;
+			Identity.InitIdentity();
 
-		float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f;
-		float TimeInTicks = TimeInSeconds * TicksPerSecond;
-		float AnimationTime = fmod(TimeInTicks, scene->mAnimations[0]->mDuration);
+			float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+			float TimeInTicks = (TimeInSeconds)* TicksPerSecond;
+			float AnimationTime = fmod(TimeInTicks , scene->mAnimations[currentAnimation]->mDuration);
 
-		ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
+			ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
 
-		Transforms.resize(boneCount);
+			Transforms.resize(boneCount);
 
-		for (uint i = 0; i < boneCount; i++) {
-			Transforms[i] = boneInfo[i].FinalTransformation;
-		}
-		ofstream transformFile;
-		transformFile.open("transforms.txt");
-		for (int x = 0; x < Transforms.size(); x++){
-			transformFile << "Bone: " << x << "\n";
-			for (int y = 0; y < 4; y++){
-				for (int z = 0; z < 4; z++){
-					transformFile << ((Transforms[x].m[y][z])) << " ";
-				}
-				transformFile << "\n";
+			for (uint i = 0; i < boneCount; i++) {
+				Transforms[i] = boneInfo[i].FinalTransformation;
 			}
+			return true;
 		}
-		transformFile.close();
-		bool temp = false;
+		if (playing == false && loop){
+			return true;
+		}
+		return false;
 	}
+	return false;
 }
 void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform)
 {
 	string NodeName(pNode->mName.data);
 
-	const aiAnimation* pAnimation = scene->mAnimations[0];
+	const aiAnimation* pAnimation = scene->mAnimations[currentAnimation];
 
 	Matrix4f NodeTransformation(pNode->mTransformation);
 
@@ -328,7 +352,19 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Ma
 		ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
 	}
 }
-
+void Model::SetUserMeshes(){
+	//Base Body
+	userMeshes["OBM_Arms"] = 1;
+	userMeshes["HairMeshA"] = 1;
+	userMeshes["OBM_Head_EarsA"] = 1;
+	userMeshes["OBM_Legs"] = 1;
+	userMeshes["OBM_Torso"] = 1;
+	userMeshes["noseB"] = 1;
+	userMeshes["OBM_Head_LowerTeeth"] = 1;
+	userMeshes["OBM_Head_UpperTeeth"] = 1;
+	userMeshes["OBheadStyleB"] = 1;
+	userMeshes["BOOTSleatherArmour"] = 1;
+}
 uint Model::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim){
 	for (uint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++) {
 		if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
@@ -439,7 +475,7 @@ void Model::VertexBoneData::AddBoneData(uint BoneID, float Weight) {
 		}
 	}
 	// should never get here - more bones than we have space for
-	assert(0);
+	//assert(0);
 }
 void Matrix4f::InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ)
 {

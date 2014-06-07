@@ -4,10 +4,10 @@
 
 Texture::Texture(){
 	mipMapsGenerated = false;
+	created = false;
 }
 
 void Texture::Create(int a_iWidth, int a_iHeight, GLenum format){
-	std::cout << "Created 1" << std::endl;
 
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
@@ -23,11 +23,8 @@ void Texture::Create(int a_iWidth, int a_iHeight, GLenum format){
 }
 
 void Texture::CreateFromData(BYTE* bData, int a_iWidth, int a_iHeight, int a_iBPP, GLenum format, bool bGenerateMipMaps){
-	std::cout << "Created 2" << std::endl;
-	// Generate an OpenGL texture ID for this texture
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
-	std::cout << "Texture: " << std::to_string(id) << std::endl;
 	if (format == GL_RGBA || format == GL_BGRA)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, a_iWidth, a_iHeight, 0, format, GL_UNSIGNED_BYTE, bData);
 	// We must handle this because of internal format parameter
@@ -48,6 +45,7 @@ void Texture::CreateFromData(BYTE* bData, int a_iWidth, int a_iHeight, int a_iBP
 bool Texture::Load(std::string a_path, bool bGenerateMipMaps){
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	FIBITMAP* dib(0);
+	path = a_path;
 
 	fif = FreeImage_GetFileType(a_path.c_str(), 0); // Check the file signature and deduce its format
 
@@ -77,9 +75,7 @@ bool Texture::Load(std::string a_path, bool bGenerateMipMaps){
 
 	FreeImage_Unload(dib);
 
-	path = a_path;
-	std::cout << "Loaded" << std::endl;
-
+	created = true;
 	return true; // Success
 }
 
@@ -153,7 +149,9 @@ GLuint Texture::GetID(){
 }
 
 std::string Texture::GetPath(){
+	if (created)
 	return path;
+	return "";
 }
 
 /*bool Texture::Reload(){

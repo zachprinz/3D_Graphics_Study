@@ -51,6 +51,8 @@ double mouseYPos;
 float horizontalAngle = 3.14f;
 float verticalAngle = 0.0f;
 
+//GameObject* character;
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_PRESS){
@@ -79,6 +81,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_F2:
 			Scene::Instance->SwapDebug();
 			break;
+		//case GLFW_KEY_SPACE:
+		//	character->Walk();
+		//	break;
 		}
 	}
 	if (action == GLFW_RELEASE){
@@ -134,8 +139,6 @@ int init(void){
 }
 
 void CheckInput(){
-	glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
-	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
 	if (wIsDown)
 		camera.Translate(10.f * elapsedTime * -1.f * Z_AXIS);
 	if (aIsDown)
@@ -152,7 +155,7 @@ void CheckInput(){
 
 int main(void){
 	init();
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 
 	GUI gui;
 
@@ -169,15 +172,15 @@ int main(void){
 	camera.shaders.push_back(&tileShader);
 	camera.shaders.push_back(&skyboxShader);
 
-	Scene scene("data\\maps\\heightmap.bmp", "data/skybox/2/", glm::vec3(200.0f, 17.5f, 200.0f));
+	Scene scene("data\\maps\\heightmap.bmp", "data/skybox/3/", glm::vec3(200.0f, 17.5f, 200.0f));
 
 	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(45, 45), true);
 	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
-	//GameObject user("data\\models\\Gaurd\\boblampclean.md5mesh", glm::vec2(50, 50)); // Human\\human.x also works
-	GameObject user("data\\models\\User\\User.x", glm::vec2(50, 50)); // Human\\human.x also works
-
-	//user.Rotate(glm::vec3(270.0, 0.0, 0.0));
-	//user.SetScale(glm::vec3(0.05, 0.05, 0.05));
+	//GameObject user("data\\models\\Witch\\Witch.x", glm::vec2(50, 50));
+	GameObject user("data\\models\\User\\OBm.x", glm::vec2(50, 50));
+	//character = &user;
+	user.Rotate(glm::vec3(0.0, 180.0, 0.0));
+	user.SetScale(glm::vec3(0.025, 0.025, 0.025));
 	//user.Translate(glm::vec3(0.0, 5.0, 0.0));
 
 	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(53,50));
