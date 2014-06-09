@@ -124,3 +124,8 @@ void Tile::Render(){
 		shader->SetUniform("doOverride", 0);
 	}
 }
+bool Tile::contains(glm::vec3 pos){
+	if (fabs(position.x - pos.x) > 0.1 || fabs(position.z - pos.z) > 0.1)
+		return false;
+	return true;
+}

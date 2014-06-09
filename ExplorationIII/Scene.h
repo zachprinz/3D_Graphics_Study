@@ -16,12 +16,14 @@
 #include "GLDebugDrawer.h"
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
+class Actor;
 class Scene{
 public:
 	Scene(char* terrainPath, char* skyboxPath, glm::vec3);
 	void Update();
 	void Render();
 	void AddObject(GameObject*);
+	void AddActor(Actor*);
 	static Scene* Instance;
 	btAlignedObjectArray<btCollisionShape*> shapes;
 	btDiscreteDynamicsWorld*			 dynamicsWorld;
@@ -40,7 +42,9 @@ private:
 	btCollisionDispatcher*				 dispatcher;
 	btSequentialImpulseConstraintSolver* solver;
 	GLDebugDrawer						 debugDrawer;
+public:
 	btAxisSweep3 *						 m_overlappingPairCache;
+private:
 	btOverlappingPairCallback*			 m_ghostPairCallback;
 	float currentTime;
 	float lastTime;

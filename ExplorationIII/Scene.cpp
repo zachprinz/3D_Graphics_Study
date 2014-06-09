@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "Camera.h"
+#include "Actor.h"
 
 Scene* Scene::Instance = NULL;
 
@@ -28,7 +29,8 @@ Scene::Scene(char* terrainPath, char* skyboxPath, glm::vec3 terrainSize){
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
 	btGImpactCollisionAlgorithm::registerAlgorithm(dispatcher);
 	solver = new btSequentialImpulseConstraintSolver;
-	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase , solver, collisionConfiguration);//m_overlappingPairCache
+	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, m_overlappingPairCache, solver, collisionConfiguration);//m_overlappingPairCache
+	m_overlappingPairCache->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback()); // This maybe should be in actor?
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 	debugDrawer.setDebugMode(0);
 	dynamicsWorld->setDebugDrawer(&debugDrawer);
@@ -71,6 +73,11 @@ void Scene::AddObject(GameObject* object){
 	dynamicsWorld->addRigidBody(object->GetBody());// , COL_OBJECT, OBJECT_COLLISION_MASK);
 	shapes.push_back(object->GetBody()->getCollisionShape());
 };
+void Scene::AddActor(Actor* actor){
+	objects.push_back(actor);
+	dynamicsWorld->addCollisionObject(actor->GetGhostObject(), btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
+	dynamicsWorld->addAction(actor->GetCharacter());
+}
 Map* Scene::getMap(){
 	return map;
 }

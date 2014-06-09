@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <stdio.h>
+#include "GameObject.h"
 #include <string>
 
 #define X_AXIS glm::vec3(1.f,0.f,0.f)
@@ -52,8 +53,10 @@ void Camera::SetAngle(float x, float y){
 }
 
 void Camera::Update(){
-	focus = glm::vec3(position.x, position.y-1.0f, position.z - 3.2f);
-
+	position = target->GetPosition();
+	position.z += 30.0f;
+	position.y += 30.0f;
+	focus = glm::vec3(target->GetPosition().x, target->GetPosition().y - 1.0, target->GetPosition().z - 5.0);
 	view = glm::lookAt(position, focus, up);
 	for (int x = 0; x < shaders.size(); x++){
 		shaders.at(x)->Use();
@@ -65,4 +68,7 @@ void Camera::Update(){
 
 glm::vec3 Camera::GetPosition(){
 	return position;
+}
+void Camera::SetTarget(GameObject* newTarget){
+	target = newTarget;
 }

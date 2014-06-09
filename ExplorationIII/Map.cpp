@@ -39,3 +39,15 @@ void Map::SetTileSize(glm::vec2 size){
 Terrain* Map::getTerrain(){
 	return terrain;
 }
+glm::vec2 Map::IsOnTile(glm::vec3 pos, glm::vec2 tilePos){
+	std::cout << "Tile: (" << tilePos.x << "< " << tilePos.y << ")\n";
+	if (tiles[tilePos.x][tilePos.y + 1]->contains(pos))
+		return glm::vec2(tilePos.x, tilePos.y + 1);
+	if (tiles[tilePos.x][tilePos.y - 1]->contains(pos))
+		return glm::vec2(tilePos.x, tilePos.y - 1);
+	if (tiles[tilePos.x - 1][tilePos.y]->contains(pos))
+		return glm::vec2(tilePos.x - 1, tilePos.y);
+	if (tiles[tilePos.x + 1][tilePos.y]->contains(pos))
+		return glm::vec2(tilePos.x + 1, tilePos.y);
+	return glm::vec2(-1,-1);
+}

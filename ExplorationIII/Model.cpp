@@ -15,6 +15,10 @@
 #include <fstream>
 #include <GLFW/glfw3.h>
 
+#define X_AXIS glm::vec3(1.f,0.f,0.f)
+#define Y_AXIS glm::vec3(0.f,1.f,0.f)
+#define Z_AXIS glm::vec3(0.f,0.f,1.f)
+
 
 std::vector<Texture> Model::textures;
 Shader* Model::shader;
@@ -24,15 +28,15 @@ map<std::string, int> Model::userMeshes;
 
 void Model::SetAnimation(std::string animationName){
 	if (isAnimated){
-		std::cout << "Setting Animation: " << animationName << std::endl;
 		currentAnimation = animations[animationName];
 		loop = false;
 	}
 }
 void Model::Loop(){ loop = true; Play(); };
-void Model::Play(){ play = true; animationStartTime = glfwGetTime();}
+void Model::Play(){ play = true; animationStartTime = glfwGetTime(); paused = false; }
 void Model::Pause(){ paused = true; pauseTime = glfwGetTime() - animationStartTime; };
 void Model::Resume(){ paused = false; animationStartTime = glfwGetTime() - pauseTime; };
+
 std::string GetDirectoryPath(std::string sFilePath){
 	std::string sDirectory = "";
 	int size = sFilePath.size() - 1;
@@ -245,12 +249,17 @@ void Model::Render(){
 	}
 	glBindVertexArray(0);
 };
+void Model::SetRotation(glm::vec3 rot){
+	rotation = rot;
+}
 void Model::Update(glm::mat4 model){
 	shader->Use();
 	glm::mat4 tempModel = model;
 	tempModel = glm::scale(tempModel, modelScale);
+	tempModel = glm::rotate(tempModel, rotation.x, X_AXIS);
+	tempModel = glm::rotate(tempModel, rotation.y, Y_AXIS);
+	tempModel = glm::rotate(tempModel, rotation.z, Z_AXIS);
 	tempModel = glm::translate(tempModel, modelOffset);
-	std::cout << "Model Offset: (" << modelOffset.x << " ," << modelOffset.y << " ," << modelOffset.z << " )" << std::endl;
 	shader->SetModelAndNormalMatrix("modelMatrix", "normalMatrix", tempModel);
 	vector<Matrix4f> Transforms;
 	if (isAnimated){

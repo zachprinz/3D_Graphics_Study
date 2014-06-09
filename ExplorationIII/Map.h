@@ -16,6 +16,7 @@ public:
 	void SetTileSize(glm::vec2);
 	Terrain* getTerrain();
 	void SwapDebug();
+	glm::vec2 IsOnTile(glm::vec3, glm::vec2);
 private:
 	bool debug;
 	glm::vec2 mapSize;

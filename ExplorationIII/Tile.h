@@ -18,6 +18,7 @@ public:
 	static int indicesCount;
 	static bool debug;
 	static Shader* shader;
+	bool contains(glm::vec3);
 private:
 	static int count;
 	static GLuint vbo;

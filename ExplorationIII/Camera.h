@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include "Shader.h"
+#include "GameObject.h"
 
 class Camera{
 public:
@@ -20,7 +21,9 @@ public:
 	glm::mat4 view;
 	std::vector<Shader*> shaders;
 	static Camera* Instance;
+	void SetTarget(GameObject*);
 private:
+	GameObject* target;
 	float xAngle;
 	float yAngle;
 	float xDelta;

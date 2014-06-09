@@ -15,7 +15,7 @@
 class GameObject{
 public:
 	GameObject(char* meshName, glm::vec2 position = glm::vec2(0, 0), bool isStatic = false);
-	void Update();
+	virtual void Update();
 	void Render();
 	void SetPosition(glm::vec3);
 	void Translate(glm::vec3);
@@ -25,12 +25,10 @@ public:
 	int GetID();
 	btRigidBody* GetBody();
 	static int count;
-	void Walk();
-	void Walk2();
-	void Walk3(); 
-	void Walk4();
 	Model* GetModel();
-private:
+	glm::vec3 GetPosition();
+protected:
+	glm::vec2 tilePos;
 	Model model;
 	int ID;
 	glm::vec3 scale;

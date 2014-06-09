@@ -24,6 +24,7 @@
 #include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 #include "GameObject.h"
 #include "Scene.h"
+#include "Actor.h"
 
 
 GLFWwindow* window;
@@ -51,7 +52,7 @@ double mouseYPos;
 float horizontalAngle = 3.14f;
 float verticalAngle = 0.0f;
 
-GameObject* character;
+Actor* character;
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -81,15 +82,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_F2:
 			Scene::Instance->SwapDebug();
 			break;
-		case GLFW_KEY_SPACE:
-			character->Walk2();
-			break;
-		case GLFW_KEY_ENTER:
-			character->Walk();
-			break;
-		case GLFW_KEY_LEFT_SHIFT:
-			character->Walk4();
-			break;
+
 		}
 	}
 	if (action == GLFW_RELEASE){
@@ -111,9 +104,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 		case GLFW_KEY_E:
 			eIsDown = !true;
-			break;
-		case GLFW_KEY_SPACE:
-			character->Walk3();
 			break;
 		}
 	}
@@ -149,13 +139,13 @@ int init(void){
 
 void CheckInput(){
 	if (wIsDown)
-		camera.Translate(10.f * elapsedTime * -1.f * Z_AXIS);
+		character->Start(glm::vec2(0, 1));
 	if (aIsDown)
-		camera.Translate(10.f * elapsedTime * -1.f * X_AXIS);
+		character->Start(glm::vec2(-1, 0));
 	if (sIsDown)
-		camera.Translate(10.f * elapsedTime * 1.f * Z_AXIS);
+		character->Start(glm::vec2(0, -1));
 	if (dIsDown)
-		camera.Translate(10.f * elapsedTime * 1.f * X_AXIS);
+		character->Start(glm::vec2(1, 0));
 	if (qIsDown)
 		camera.Translate(10.f * elapsedTime * -1.f * Y_AXIS);
 	if (eIsDown)
@@ -164,7 +154,7 @@ void CheckInput(){
 
 int main(void){
 	init();
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 
 	GUI gui;
 
@@ -186,14 +176,15 @@ int main(void){
 	GameObject tree("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(45, 45), true);
 	GameObject tree2("data\\models\\Trees\\6\\birch_01_a.obj", glm::vec2(55, 45), true);
 	//GameObject user("data\\models\\Witch\\Witch.x", glm::vec2(50, 50));
-	GameObject user("data\\models\\User\\OBm.x", glm::vec2(50, 50));
+	Actor user("data\\models\\User\\OBm.x", glm::vec2(50, 50));
+	camera.SetTarget(&user);
 	character = &user;
-	user.GetModel()->SetModelOffset(glm::vec3(-2.75, 0.0, -2.85));
+	user.GetModel()->SetModelOffset(glm::vec3(-2.75, 0.0, -5.0));
 	user.Rotate(glm::vec3(0.0, 180.0, 0.0));
 	user.GetModel()->SetModelScale(glm::vec3(0.025, 0.025, 0.025));
 	//user.Translate(glm::vec3(0.0, 5.0, 0.0));
 
-	GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(53,50));
+	//GameObject wolf("data\\models\\Wolf\\Wolf.obj", glm::vec2(53,50));
 
 	previousTime = glfwGetTime();
 
@@ -208,6 +199,7 @@ int main(void){
 		previousTime = glfwGetTime();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		Model::elapsedTime += elapsedTime;
+		Actor::elapsedTime = elapsedTime;
 
 		camera.Update();
 

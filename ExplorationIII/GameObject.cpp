@@ -11,21 +11,24 @@ GameObject::GameObject(char* meshName, glm::vec2 position, bool isStatic){
 	ID = count++;
 	model.Load(meshName);
 	this->position = Scene::Instance->getMap()->getTilePosition(position);
+	tilePos = position;
 	rotation = glm::vec3(0.0, 0.0, 0.0);
 	scale = glm::vec3(1.0, 1.0, 1.0);
 	//Physics
-	collisionShape = new btBoxShape(btVector3(1.0, 1.0, 1.0));
-	float fall = 20.f;
-	if (isStatic) fall = 10.f;
-	btVector3 bodyPosition(this->position.x, this->position.y + fall, this->position.z);
-	btQuaternion orientation(1.0, 0.0, 0.0, 0.0);
-	btTransform transform(orientation, bodyPosition);
-	btDefaultMotionState* motionstate = new btDefaultMotionState(transform);
-	btScalar mass = 1.0f;
-	if (isStatic) mass = 0.f;
-	btRigidBody::btRigidBodyConstructionInfo bodyInfo(mass, motionstate, collisionShape, btVector3(0, 0, 0));
-	body = new btRigidBody(bodyInfo);
-	Scene::Instance->AddObject(this);
+	if (isStatic){
+		collisionShape = new btBoxShape(btVector3(1.0, 1.0, 1.0));
+		float fall = 20.f;
+		if (isStatic) fall = 10.f;
+		btVector3 bodyPosition(this->position.x, this->position.y + fall, this->position.z);
+		btQuaternion orientation(1.0, 0.0, 0.0, 0.0);
+		btTransform transform(orientation, bodyPosition);
+		btDefaultMotionState* motionstate = new btDefaultMotionState(transform);
+		btScalar mass = 1.0f;
+		if (isStatic) mass = 0.f;
+		btRigidBody::btRigidBodyConstructionInfo bodyInfo(mass, motionstate, collisionShape, btVector3(0, 0, 0));
+		body = new btRigidBody(bodyInfo);
+		Scene::Instance->AddObject(this);
+	}
 };
 void GameObject::Update(){
 	btTransform trans;
@@ -64,20 +67,9 @@ int GameObject::GetID(){
 btRigidBody* GameObject::GetBody(){
 	return body;
 }
-void GameObject::Walk(){
-	model.SetAnimation("WizardWalk");
-	model.Play();
-}
-void GameObject::Walk4(){
-	model.SetAnimation("WizardWalk");
-	model.Loop();
-}
-void GameObject::Walk2(){
-	model.Pause();
-}
-void GameObject::Walk3(){
-	model.Resume();
-}
 Model* GameObject::GetModel(){
 	return &model;
+}
+glm::vec3 GameObject::GetPosition(){
+	return position;
 }

@@ -181,7 +181,9 @@ public:
 	void SetModelOffset(glm::vec3);
 	void SetModelScale(glm::vec3);
 	glm::vec3 GetModelOffset();
+	void SetRotation(glm::vec3);
 private:
+	glm::vec3 rotation;
 	glm::vec3 modelScale;
 	glm::vec3 modelOffset;
 	void SetUserMeshes();
